@@ -134,7 +134,7 @@ export default function CheckoutPage({ selectedTickets, totalAmount, onBack, onS
         <div className="flex justify-between items-end border-t border-blue-200 pt-2 mt-2">
             <div>
                 <p className="text-sm text-gray-500">Total en Divisa:</p>
-                <p className="text-xl font-bold text-gray-800">${totalAmount}</p>
+                <p className="text-xl font-bold text-gray-800">{totalAmount}€</p>
             </div>
             <div className="text-right">
                 <p className="text-sm text-gray-500">Tasa BCV:</p>
