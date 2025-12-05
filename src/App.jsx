@@ -6,6 +6,7 @@ import FloatingCheckoutBar from "./components/FloatingCheckoutBar";
 import BuyTicketsPage from "./page/BuyTicketsPage";
 import OraclePage from "./page/OraclePage";
 import HomePage from "./page/HomePage";
+import CheckoutPage from "./page/CheckoutPage";
 
 // Inicializamos Supabase con las claves de tu archivo .env
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -118,11 +119,23 @@ export default function App() {
           )
         )}
 
+        {activeTab === "checkout" && (
+          <CheckoutPage 
+            selectedTickets={selectedTickets}
+            totalAmount={totalAmount}
+            onBack={() => setActiveTab("comprar")} // Para que el botón "Volver" funcione
+            onSuccess={() => {
+              setSelectedTickets([]); // Limpiar carrito al terminar
+              setActiveTab("inicio"); // Mandar al inicio
+            }}
+          />
+        )}
+
       <FloatingCheckoutBar
         selectedTickets={selectedTickets}
         totalAmount={totalAmount}
         onClear={() => setSelectedTickets([])}
-        onGoToComprar={() => setActiveTab("comprar")}
+        onGoToComprar={() => setActiveTab("checkout")}
       />
     </div>
   );

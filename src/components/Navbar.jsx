@@ -68,7 +68,7 @@ const Navbar = ({
 
   return (
     <nav
-      className="sticky top-0 z-50 bg-black/30 backdrop-blur-md border-b border-white/10"
+      className="sticky top-0 z-50 bg-white/50 backdrop-blur-xl"
       aria-label="Top navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
