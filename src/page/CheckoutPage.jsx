@@ -19,25 +19,31 @@ export default function CheckoutPage({ selectedTickets, totalAmount, onBack, onS
       try {
         // Llamamos a TU backend que lee el BCV
         const response = await fetch('/api/tasa');
+        
+        // Si la respuesta de red no es ok, lanzamos error para que lo atrape el catch
+        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
         const data = await response.json();
 
-        if (data.success) {
-          setTasaBCV(data.rates.usd); // Guardamos el valor del dólar
-          console.log("✅ Tasa cargada:", data.rates.usd);
-        } else {
-          console.error("Error API:", data.error);
-          alert("⚠️ No se pudo obtener la tasa automática. Por favor verifica el monto.");
-        }
-      } catch (err) {
-        console.error("Error conectando con API tasa:", err);
+        // --- CORRECCIÓN CLAVE AQUÍ ---
+        // Usamos ?. para verificar paso a paso. 
+        // Si data.current es undefined, no explota, simplemente salta al 65.
+        const precioOficial = data?.current?.usd || 65;
+
+        setTasaBCV(precioOficial);
+
+      } catch (error) {
+        console.error("Error conectando con API tasa:", error);
+        // Si falla todo (red caída, json mal formado), usamos tasa de emergencia
+        setTasaBCV(65); 
       } finally {
+        // Esto asegura que el spinner de carga se quite SIEMPRE
         setLoadingTasa(false);
       }
     };
 
     fetchTasa();
   }, []);
-
   // --- CÁLCULOS MATEMÁTICOS ---
   // Si la tasa es 0 o está cargando, el monto en Bs es 0 por seguridad
   const montoEnBs = tasaBCV > 0 ? totalAmount * tasaBCV : 0;
