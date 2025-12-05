@@ -6,13 +6,15 @@ const FloatingCheckoutBar = ({
   selectedTickets,
   totalAmount,
   onClear,
-  onGoToComprar,
+  onGoToComprar, // Esta es la función que viene de App.jsx
 }) => {
   if (selectedTickets.length === 0) return null;
 
   return (
     <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-4 z-50">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between">
+        
+        {/* Lado Izquierdo: Icono y Total */}
         <div className="flex items-center mb-4 sm:mb-0">
           <div
             className="bg-indigo-100 p-2 rounded-full mr-3 cursor-pointer"
@@ -31,7 +33,10 @@ const FloatingCheckoutBar = ({
           </div>
         </div>
 
+        {/* Lado Derecho: Resumen y Botones */}
         <div className="flex items-center w-full sm:w-auto space-x-3">
+          
+          {/* Pequeña lista de números seleccionados (solo desktop) */}
           <div className="hidden md:flex flex-wrap gap-1 mr-4 max-w-xs justify-end">
             {selectedTickets.slice(0, 5).map((n) => (
               <span
@@ -47,20 +52,18 @@ const FloatingCheckoutBar = ({
               </span>
             )}
           </div>
+
+          {/* Botón Limpiar */}
           <button
             onClick={onClear}
             className="flex-1 sm:flex-none px-4 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
           >
             Limpiar
           </button>
+
+          {/* Botón Pagar Ahora (CORREGIDO) */}
           <button
-            onClick={() =>
-              alert(
-                `¡Listo! Procesando compra por $${totalAmount} para los números: ${selectedTickets
-                  .map((n) => n.toString().padStart(3, "0"))
-                  .join(", ")}`
-              )
-            }
+            onClick={onGoToComprar} // <--- AQUÍ HICIMOS EL CAMBIO
             className="flex-1 sm:flex-none px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-md transform active:scale-95 transition-all flex items-center justify-center"
           >
             Pagar Ahora <CheckCircle className="ml-2 h-5 w-5" />

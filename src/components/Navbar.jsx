@@ -1,147 +1,246 @@
 // src/components/Navbar.jsx
-import React from "react";
-import { Menu, X, Ticket, ShoppingCart, Sparkles } from "lucide-react";
+import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
+import { Ticket, ShoppingCart, Sparkles } from "lucide-react";
 
+/**
+ * Navbar mejorado:
+ * - mobile menu no ocupa espacio cuando está cerrado (max-height + overflow-hidden)
+ * - animated indicator en desktop que se mueve entre los botones
+ *
+ * Props:
+ *  - activeTab, setActiveTab
+ *  - isMobileMenuOpen, setIsMobileMenuOpen
+ *  - selectedTickets, totalAmount
+ */
 const Navbar = ({
   activeTab,
   setActiveTab,
   isMobileMenuOpen,
   setIsMobileMenuOpen,
-  selectedTickets,
-  totalAmount,
+  selectedTickets = [],
+  totalAmount = 0,
 }) => {
+  const toggleMobile = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  // Refs para el indicator (desktop)
+  const navContainerRef = useRef(null);
+  const linkRefs = useRef({});
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, opacity: 0 });
+
+  // mapping tabs to keys (ensure consistent order)
+  const desktopTabs = [
+    { key: "inicio", label: "Inicio" },
+    { key: "comprar", label: "Comprar Tickets" },
+    { key: "oracle", label: "IA Mística" },
+  ];
+
+  // calcula la posición del indicador basado en activeTab
+  const updateIndicator = () => {
+    const activeKey = activeTab || "inicio";
+    const container = navContainerRef.current;
+    const btn = linkRefs.current[activeKey];
+    if (container && btn) {
+      const contRect = container.getBoundingClientRect();
+      const rect = btn.getBoundingClientRect();
+      const left = rect.left - contRect.left;
+      const width = rect.width;
+      setIndicatorStyle({ left, width, opacity: 1 });
+    } else {
+      // si no hay btn (por ej en mobile) ocultamos indicador
+      setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+    }
+  };
+
+  // actualizar al montar, cuando cambie activeTab o al redimensionar
+  useLayoutEffect(() => {
+    updateIndicator();
+    const onResize = () => updateIndicator();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  // helper para asignar ref desde NavLink
+  const setLinkRef = (key, node) => {
+    if (node) linkRefs.current[key] = node;
+    else delete linkRefs.current[key];
+  };
+
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <nav
+      className="sticky top-0 z-50 bg-black/30 backdrop-blur-md border-b border-white/10"
+      aria-label="Top navigation"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div
-              className="shrink-0 flex items-center cursor-pointer"
+        <div className="flex items-center justify-between h-16">
+
+          {/* Left: brand + desktop links */}
+          <div className="flex items-center gap-6">
+            <button
               onClick={() => setActiveTab("inicio")}
+              className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded"
+              aria-label="Ir al inicio"
             >
-              <div className="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-2">
+              <div className="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center">
                 <Ticket className="h-5 w-5 text-white" />
               </div>
-              <span className="font-bold text-xl text-gray-900">
-                Gran Rifa SBR
-              </span>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <button
-                onClick={() => setActiveTab("inicio")}
-                className={`${
-                  activeTab === "inicio"
-                    ? "border-indigo-500 text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-full`}
-              >
-                Inicio
-              </button>
-              <button
-                onClick={() => setActiveTab("comprar")}
-                className={`${
-                  activeTab === "comprar"
-                    ? "border-indigo-500 text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-full`}
-              >
-                Comprar Tickets
-              </button>
-              <button
-                onClick={() => setActiveTab("oracle")}
-                className={`${
-                  activeTab === "oracle"
-                    ? "border-purple-500 text-purple-900"
-                    : "border-transparent text-gray-500 hover:text-purple-700"
-                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-full group`}
-              >
-                <Sparkles className="w-4 h-4 mr-1 text-purple-500 group-hover:animate-pulse" />
-                IA Mística
-              </button>
-            </div>
-          </div>
-
-          {/* Carrito Resumen (Escritorio) */}
-          <div className="hidden sm:flex items-center">
-            {selectedTickets.length > 0 && (
-              <div
-                className="bg-indigo-50 px-4 py-1 rounded-full flex items-center text-indigo-700 text-sm font-medium mr-4 border border-indigo-100 cursor-pointer hover:bg-indigo-100 transition-colors"
-                onClick={() => setActiveTab("comprar")}
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                {selectedTickets.length} boletos (${totalAmount})
-              </div>
-            )}
-            <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
-              JD
-            </div>
-          </div>
-
-          {/* Botón Menú Móvil */}
-          <div className="-mr-2 flex items-center sm:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
-            >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              <span className="font-bold text-lg text-gray-900">Gran Rifa SBR</span>
             </button>
+
+            {/* Desktop nav links (wrap with relative for indicator) */}
+            <div className="hidden sm:block">
+              <div ref={navContainerRef} className="relative">
+                <div className="flex items-center space-x-2">
+                  {desktopTabs.map((t) =>
+                    t.key !== "oracle" ? (
+                      <DesktopLink
+                        key={t.key}
+                        label={t.label}
+                        active={activeTab === t.key}
+                        onClick={() => setActiveTab(t.key)}
+                        setRef={(node) => setLinkRef(t.key, node)}
+                      />
+                    ) : (
+                      // oracle custom styled
+                      <button
+                        key={t.key}
+                        ref={(n) => setLinkRef(t.key, n)}
+                        onClick={() => setActiveTab(t.key)}
+                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-md text-sm font-medium transition ${
+                          activeTab === t.key
+                            ? "text-purple-700"
+                            : "text-gray-600 hover:text-purple-600"
+                        }`}
+                      >
+                        <Sparkles className="w-4 h-4 text-purple-500" />
+                        <span className="hidden md:inline">IA Mística</span>
+                      </button>
+                    )
+                  )}
+                </div>
+
+                {/* Indicator bar (absolute) */}
+                <span
+                  aria-hidden
+                  className="absolute bottom-0 h-0.5 bg-indigo-500 rounded transition-all duration-300"
+                  style={{
+                    left: indicatorStyle.left,
+                    width: indicatorStyle.width,
+                    opacity: indicatorStyle.opacity,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right: cart (desktop) + mobile toggle */}
+          <div className="flex items-center gap-4">
+            {/* Cart desktop summary */}
+            <div className="hidden sm:flex items-center">
+              {selectedTickets.length > 0 ? (
+                <button
+                  onClick={() => setActiveTab("comprar")}
+                  className="inline-flex items-center gap-2 bg-white/70 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium border border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 transition"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>{selectedTickets.length} • ${totalAmount}</span>
+                </button>
+              ) : null}
+            </div>
+
+            {/* Mobile menu button (animated hamburger -> X). color adapt if background is light */}
+            <div className="sm:hidden">
+              <button
+                onClick={toggleMobile}
+                aria-expanded={isMobileMenuOpen}
+                aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                className="relative w-10 h-10 flex items-center justify-center rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+              >
+                <span className="sr-only">{isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}</span>
+
+                {/* Lines */}
+                <span
+                  className={`block absolute w-6 h-0.5 bg-gray-800 transition-transform duration-300 ${isMobileMenuOpen ? "rotate-45" : "-translate-y-2"}`}
+                  style={{ transformOrigin: "center" }}
+                />
+                <span
+                  className={`block absolute w-6 h-0.5 bg-gray-800 transition-all duration-300 ${isMobileMenuOpen ? "opacity-0 scale-90" : "opacity-100"}`}
+                />
+                <span
+                  className={`block absolute w-6 h-0.5 bg-gray-800 transition-transform duration-300 ${isMobileMenuOpen ? "-rotate-45" : "translate-y-2"}`}
+                  style={{ transformOrigin: "center" }}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Menú Móvil */}
-      {isMobileMenuOpen && (
-        <div className="sm:hidden bg-white border-b border-gray-200">
-          <div className="pt-2 pb-3 space-y-1">
-            <button
+      {/* Mobile menu (animated, but not occupying space when closed) */}
+      <div
+        className={`sm:hidden overflow-hidden transition-[max-height,opacity] duration-300 ${
+          isMobileMenuOpen ? "max-h-[600px] opacity-100 pointer-events-auto" : "max-h-0 opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="backdrop-blur-md bg-white/40 border-t border-white/10">
+          <div className="pt-3 pb-4 space-y-1">
+            <MobileLink
+              label="Inicio"
+              active={activeTab === "inicio"}
               onClick={() => {
                 setActiveTab("inicio");
                 setIsMobileMenuOpen(false);
               }}
-              className={`${
-                activeTab === "inicio"
-                  ? "bg-indigo-50 border-indigo-500 text-indigo-700"
-                  : "text-gray-500"
-              } block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left`}
-            >
-              Inicio
-            </button>
-            <button
+            />
+            <MobileLink
+              label="Comprar Tickets"
+              active={activeTab === "comprar"}
               onClick={() => {
                 setActiveTab("comprar");
                 setIsMobileMenuOpen(false);
               }}
-              className={`${
-                activeTab === "comprar"
-                  ? "bg-indigo-50 border-indigo-500 text-indigo-700"
-                  : "text-gray-500"
-              } block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left`}
-            >
-              Comprar Tickets
-            </button>
-            <button
+            />
+            <MobileLink
+              label="IA Mística"
+              active={activeTab === "oracle"}
+              icon={<Sparkles className="w-4 h-4 text-purple-500" />}
               onClick={() => {
                 setActiveTab("oracle");
                 setIsMobileMenuOpen(false);
               }}
-              className={`${
-                activeTab === "oracle"
-                  ? "bg-purple-50 border-purple-500 text-purple-700"
-                  : "text-gray-500"
-              } pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left flex items-center`}
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              IA Mística
-            </button>
+            />
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 };
+
+/* Desktop link component with ref forwarding via setRef prop */
+const DesktopLink = ({ label, active, onClick, setRef }) => {
+  return (
+    <button
+      ref={setRef}
+      onClick={onClick}
+      className={`px-3 py-1 text-sm font-medium rounded-md transition ${
+        active ? "text-gray-900" : "text-gray-600 hover:text-gray-800"
+      }`}
+    >
+      {label}
+    </button>
+  );
+};
+
+const MobileLink = ({ label, onClick, active, icon = null }) => (
+  <button
+    onClick={onClick}
+    className={`w-full text-left pl-4 pr-4 py-3 flex items-center gap-3 transition ${
+      active ? "bg-white/30 text-gray-900" : "text-gray-700 hover:bg-white/10"
+    }`}
+  >
+    {icon}
+    <span className="text-base font-medium">{label}</span>
+  </button>
+);
 
 export default Navbar;
