@@ -1,7 +1,7 @@
 // src/services/geminiOracle.js
 
 export const callGeminiOracle = async (userContext) => {
-  const apiKey = ""; // Se inyecta en tiempo de ejecución
+  const apiKey = "AIzaSyB87q2UtJj-EWsqFjHZmt5jgu5_IXJOyG4"; // Se inyecta en tiempo de ejecución
   const systemPrompt = `
     Eres "El Oráculo de la Fortuna", un numerólogo místico y experto en azar para una rifa de una moto.
     Tu objetivo es interpretar el texto del usuario (un sueño, una fecha, un sentimiento) y generar 3 "Números de la Suerte" (entre 000 y 999).

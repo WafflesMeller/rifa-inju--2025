@@ -1,1 +1,54 @@
+/* 1. Importar las fuentes desde Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap");
+
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap');
+
+/* 2. Importar Tailwind */
 @import "tailwindcss";
+
+/* 3. DEFINIR EL TEMA (Colores y Fuentes) */
+@theme {
+  /* --- COLORES --- */
+  --color-primary-dark: #01247e;
+  --color-primary-light: #063bb8;
+  --color-neutral-light: #f2f2f2;
+  --color-accent-red: #d2122b;
+  --color-accent-yellow: #ffcc01;
+  --color-neutral-dark: #161616;
+
+  /* --- FUENTES (Como indicaste) --- */
+  /* Esto crea las clases 'font-anton', 'font-montserrat' y 'font-poppins' */
+  --font-anton: "Anton", sans-serif;
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+}
+
+/* 4. Estilo base global para el BODY */
+body {
+  /* 1. ¡CAMBIO! De line-gradient a radial-gradient para un look más moderno */
+  background: radial-gradient(
+    ellipse at top,
+    var(--color-primary-light),
+    var(--color-primary-dark)
+  );
+  background-attachment: fixed; /* El degradado se queda fijo */
+  background-size: cover;
+
+  min-height: 100vh;
+
+  /* Aplicamos la fuente y color de texto predeterminados */
+  @apply text-neutral-light font-montserrat;
+
+  /* Añadir Poppins como opción de fuente */
+  font-family: var(--font-poppins), var(--font-montserrat), sans-serif;
+
+  /* 2. Añadimos un pseudo-elemento para la textura */
+  position: relative;
+  z-index: 0;
+  
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
