@@ -17,7 +17,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("inicio");
   const [selectedTickets, setSelectedTickets] = useState([]);
 
-  const TICKET_PRICE = 3;
+  const TICKET_PRICE =  "3€";
 
   // --- CAMBIO FASE 2 ---
   // 1. Estado para guardar los tickets que vengan de Supabase (empieza vacío)
@@ -103,11 +103,20 @@ export default function App() {
         )}
 
         {activeTab === "comprar" && (
-          <BuyTicketsPage
-            tickets={tickets}
-            selectedTickets={selectedTickets}
-            onToggle={handleTicketToggle}
-          />
+          loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="text-2xl mb-4">⏳</div>
+              <p className="text-gray-500 font-bold animate-pulse">
+                Verificando disponibilidad...
+              </p>
+            </div>
+          ) : (
+            <BuyTicketsPage
+              tickets={tickets}
+              selectedTickets={selectedTickets}
+              onToggle={handleTicketToggle}
+            />
+          )
         )}
       </main>
 

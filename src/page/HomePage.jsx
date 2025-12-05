@@ -70,7 +70,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
                   onClick={() => setActiveTab("comprar")}
                   className="inline-flex items-center justify-center px-6 md:px-8 py-3 rounded-full text-base font-bold text-indigo-900 bg-white shadow-lg transform transition duration-200 hover:scale-105"
                 >
-                  Comprar Boleto (${TICKET_PRICE})
+                  Comprar Boleto ({TICKET_PRICE})
                 </button>
 
                 <button
@@ -131,10 +131,10 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
               <div className="px-2">
                 <StatCounter
                   title="Valor del Boleto"
-                  value={`$${TICKET_PRICE}`}
+                  value={`${TICKET_PRICE}`}
                   icon={CircleDollarSign}
                   color="bg-green-500"
-                  hint="Pago seguro"
+                  hint="A tasa Euro BCV • Pago seguro"
                 />
               </div>
             </div>
@@ -148,7 +148,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
 
 
 
-      <section className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <section className="w-full min-h-screen flex flex-col py-6 sm:px-6 lg:px-8">
         {/* Premios: 3 cards al mismo nivel */}
         <div className="pt-10 pb-8">
           <div className="text-center mb-8">
