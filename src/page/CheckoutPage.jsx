@@ -28,7 +28,7 @@ export default function CheckoutPage({ selectedTickets, totalAmount, onBack, onS
         // --- CORRECCIÓN CLAVE AQUÍ ---
         // Usamos ?. para verificar paso a paso. 
         // Si data.current es undefined, no explota, simplemente salta al 65.
-        const precioOficial = data?.current?.usd || 65;
+        const precioOficial = data?.current?.eur || 295;
 
         setTasaBCV(precioOficial);
 
