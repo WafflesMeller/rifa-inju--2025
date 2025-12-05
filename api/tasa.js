@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     // Fallback de emergencia (usa los datos manuales si falla la API)
     return res.status(500).json({
       success: false,
-      source: "Manual (Emergencia) - Falló la conexión",
+      source: "Manual (Emergencia) - Falló la conexión.",
       error: error.message,
       rates: { usd: 65, eur: 0 } // Tus valores de emergencia actuales
     });
