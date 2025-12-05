@@ -10,6 +10,11 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Temporalmente, dentro de tu CheckoutPage.jsx o App.jsx
+console.log("URL de Supabase:", import.meta.env.VITE_SUPABASE_URL); 
+console.log("Clave Anon de Supabase:", import.meta.env.VITE_SUPABASE_ANON_KEY); 
+// Asegúrate de que ambas variables de entorno se estén leyendo correctamente.
+
 export default function CheckoutPage({ selectedTickets, totalAmount, onBack, onSuccess }) {
   
   // --- ESTADOS DE TASA ---
