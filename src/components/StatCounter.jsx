@@ -26,7 +26,7 @@ const StatCounter = ({ title, value, icon: Icon, color = "bg-indigo-500", progre
       {/* text block */}
       <div className="flex flex-col min-w-0">
         <div className="flex items-baseline gap-3">
-          <div className="text-2xl md:text-3xl font-extrabold text-white leading-none truncate">{value}</div>
+          <div className="text-1xl md:text-2xl font-extrabold text-white leading-none">{value}</div>
           <div className="text-sm text-white/80 font-medium">{title}</div>
         </div>
 
