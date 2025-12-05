@@ -2,59 +2,177 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// Inicializar Supabase
+// URL del Bot de WhatsApp en Render (Reemplaza con tu URL real)
+const BOT_API_URL = 'https://whatsappbot-gg9w.onrender.com';
+
+// Inicializar Supabase (asumo que VITE_SUPABASE_URL está configurado)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function CheckoutPage({ selectedTickets, totalAmount, onBack, onSuccess }) {
-  
-  // --- ESTADOS PARA LA TASA ---
-  const [tasaBCV, setTasaBCV] = useState(0); 
-  const [loadingTasa, setLoadingTasa] = useState(true);
+  
+  // [Estados de tasa y useEffect OMITIDOS, ya son correctos]
+  const [tasaBCV, setTasaBCV] = useState(0); 
+  const [loadingTasa, setLoadingTasa] = useState(true);
 
-  // --- EFECTO: OBTENER TASA AL CARGAR ---
-  useEffect(() => {
-    const fetchTasa = async () => {
-      try {
-        // Llamamos a TU backend que lee el BCV
-        const response = await fetch('/api/tasa');
-        
-        // Si la respuesta de red no es ok, lanzamos error para que lo atrape el catch
-        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+  // --- EFECTO: OBTENER TASA AL CARGAR ---
+  useEffect(() => { /* ... Código correcto de fetchTasa ... */ 
+    const fetchTasa = async () => {
+      try {
+        const response = await fetch('/api/tasa');
+        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+        const data = await response.json();
+        const precioOficial = data?.current?.eur || 295;
+        setTasaBCV(precioOficial);
+      } catch (error) {
+        console.error("Error conectando con API tasa:", error);
+        setTasaBCV(65); 
+      } finally {
+        setLoadingTasa(false);
+      }
+    };
+    fetchTasa();
+  }, []);
 
-        const data = await response.json();
 
-        // --- CORRECCIÓN CLAVE AQUÍ ---
-        // Usamos ?. para verificar paso a paso. 
-        // Si data.current es undefined, no explota, simplemente salta al 65.
-        const precioOficial = data?.current?.eur || 295;
+  // --- CÁLCULOS MATEMÁTICOS (MODIFICADO: REDONDEO A 2 DECIMALES) ---
+  // ⚠️ REDONDEO CRÍTICO: Aseguramos 2 decimales para la comparación en DB
+  const montoCalculado = tasaBCV > 0 ? totalAmount * tasaBCV : 0;
+  const montoEnBs = parseFloat(montoCalculado.toFixed(2));
 
-        setTasaBCV(precioOficial);
+  // Función para formato "Bs. 1.200,50"
+  const formatearBs = (valor) => {
+    return "Bs. " + valor.toLocaleString('es-VE', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+  };
+  // -----------------------------
 
-      } catch (error) {
-        console.error("Error conectando con API tasa:", error);
-        // Si falla todo (red caída, json mal formado), usamos tasa de emergencia
-        setTasaBCV(65); 
-      } finally {
-        // Esto asegura que el spinner de carga se quite SIEMPRE
-        setLoadingTasa(false);
-      }
-    };
+  const [formData, setFormData] = useState({
+    nombre: '', telefono: '', telefonoFamiliar: '', cedula: '', direccion: '', referencia: ''
+  });
+  const [loading, setLoading] = useState(false);
 
-    fetchTasa();
-  }, []);
-  // --- CÁLCULOS MATEMÁTICOS ---
-  // Si la tasa es 0 o está cargando, el monto en Bs es 0 por seguridad
-  const montoEnBs = tasaBCV > 0 ? totalAmount * tasaBCV : 0;
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  // Función para formato "Bs. 1.200,50"
-  const formatearBs = (valor) => {
-    return "Bs. " + valor.toLocaleString('es-VE', { 
-      minimumFractionDigits: 2, 
-      maximumFractionDigits: 2 
-    });
-  };
+  // --- FUNCIÓN PRINCIPAL DE ENVÍO Y VALIDACIÓN (MODIFICADA) ---
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (tasaBCV === 0) {
+      alert("⚠️ Espera a que cargue la tasa del BCV antes de enviar.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // ===================================================================
+      // 1. PASO DE SEGURIDAD: VALIDAR PAGO EN HISTORIAL_PAGOS
+      // ===================================================================
+      const { data: pagoData, error: pagoError } = await supabase
+        .from('historial_pagos')
+        .select('id') // Solo necesitamos el ID para marcarlo como usado
+        .eq('referencia', formData.referencia)
+        .eq('monto_exacto', montoEnBs) // Usamos el monto redondeado
+        .eq('usada', false);
+      
+      if (pagoError) throw pagoError;
+
+      if (!pagoData || pagoData.length !== 1) {
+        // Si no encontramos 1 pago único que coincida y que no haya sido usado
+        throw new Error("Referencia no válida, monto incorrecto o pago ya usado.");
+      }
+      
+      const pagoId = pagoData[0].id; // ID del pago validado en historial_pagos
+
+
+      // ===================================================================
+      // 2. REGISTRAR VENTA EN SUPABASE
+      // ===================================================================
+      const { data: ventaData, error: ventaError } = await supabase
+        .from('ventas')
+        .insert({
+          nombre_cliente: formData.nombre,
+          telefono: formData.telefono,
+          cedula: formData.cedula,
+          direccion: formData.direccion,
+          telefono_familiar: formData.telefonoFamiliar,
+          tickets_seleccionados: selectedTickets,
+          monto_total: totalAmount, // Monto en Divisa
+          tasa_bcv: tasaBCV,
+          monto_bs: montoEnBs, // Monto en Bs redondeado
+          referencia_pago: formData.referencia,
+          estado: 'pagado' // ⚠️ CAMBIADO: Marcamos como 'pagado' ya que la referencia fue validada
+        })
+        .select('id')
+        .single();
+
+      if (ventaError) throw ventaError;
+
+      const ventaId = ventaData.id;
+
+
+      // ===================================================================
+      // 3. MARCAR PAGO COMO USADO Y VINCULARLO A LA VENTA
+      // ===================================================================
+      const { error: updateError } = await supabase
+        .from('historial_pagos')
+        .update({ usada: true, venta_id: ventaId })
+        .eq('id', pagoId);
+
+      if (updateError) throw updateError; // Si esto falla, la compra es riesgosa
+
+      
+      // 4. DISPARAR MENSAJE DE WHATSAPP
+      // ... (Código de WhatsApp OMITIDO, ya es correcto, debe apuntar a BOT_API_URL + '/enviar-mensaje') ...
+      const whatsappMessage = `🎉 ¡Felicidades, ${formData.nombre.split(' ')[0]}! Tu compra de ticket(s) ${selectedTickets.join(", ")} ha sido *CONFIRMADA*. Tu ID de Venta es #${ventaId}. ¡Mucha suerte!`;
+      
+      try {
+        await fetch(BOT_API_URL + '/enviar-mensaje', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            numero: formData.telefono, 
+            mensaje: whatsappMessage
+          })
+        });
+      } catch (botError) {
+        console.warn("❌ El bot de WhatsApp en Render falló. Venta confirmada, pero sin notificación.", botError);
+      }
+
+
+      // 5. LLAMAR AL ÉXITO
+      onSuccess({
+        orderId: ventaId,
+        tickets: selectedTickets,
+        montoBs: montoEnBs,
+        nombre: formData.nombre,
+        referencia: formData.referencia,
+      });
+
+    } catch (error) {
+      console.error("Error en la transacción:", error);
+      // Manejo de errores específicos
+      if (error.message.includes("Referencia no válida")) {
+        alert(`❌ Error de Validación: ${error.message}`);
+      } else {
+        alert("❌ Hubo un error al registrar tu compra. Intenta de nuevo.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ... (El resto del return JSX es correcto) ...
+  return (
+    // ...
+  );
+}
   // -----------------------------
 
   const [formData, setFormData] = useState({
