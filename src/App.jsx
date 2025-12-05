@@ -54,7 +54,7 @@ export default function App() {
       });
 
       // Hacemos la petición al servidor local en el puerto 3000
-      const response = await fetch(`http://localhost:3000/api/procesar?${params}`);
+      const response = await fetch(`/api/procesar?${params}`);
       const data = await response.json();
       
       // --- AQUÍ ESTÁ LA LÓGICA DEL MENSAJE ---
