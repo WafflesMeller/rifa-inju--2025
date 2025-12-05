@@ -1,54 +1,42 @@
-// URL oficial de la API
-const API_URL = 'https://api.dolarvzla.com/public/exchange-rate';
+// Nombre del archivo: api/tasa.js
 
-/**
- * Función para obtener y formatear la tasa de cambio.
- * Retorna un string listo para enviar por mensaje.
- */
-async function getTasa() {
+export default async function handler(req, res) {
+  const API_URL = 'https://api.dolarvzla.com/public/exchange-rate';
+
   try {
-    const response = await fetch(API_URL);
-    
+    // Agregamos headers para evitar el bloqueo (User-Agent es clave)
+    const response = await fetch(API_URL, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
+
     if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
+      throw new Error(`La API externa respondió con estado: ${response.status}`);
     }
 
     const data = await response.json();
 
-    // 1. Formateo de Fecha (De YYYY-MM-DD a DD/MM/YYYY)
-    // Se usa split para evitar problemas de zona horaria con new Date()
-    const [year, month, day] = data.current.date.split('-');
-    const fechaStr = `${day}/${month}/${year}`;
-
-    // 2. Helpers de formato
-    const fmtMoney = (amount) => {
-        // Formato Venezuela: coma para decimales, punto para miles
-        return new Intl.NumberFormat('es-VE', { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2 
-        }).format(amount);
-    };
-
-    const getTrend = (pct) => {
-        if (pct > 0) return `🔺 ${fmtMoney(pct)}%`;
-        if (pct < 0) return `🔻 ${fmtMoney(pct)}%`;
-        return `= 0.00%`;
-    };
-
-    // 3. Construcción del mensaje
-    const message = `
-📊 *Tasa de Cambio - ${fechaStr}*
-──────────────────
-💵 *Dólar BCV:* ${fmtMoney(data.current.usd)} Bs (${getTrend(data.changePercentage.usd)})
-💶 *Euro BCV:* ${fmtMoney(data.current.eur)} Bs (${getTrend(data.changePercentage.eur)})
-    `.trim();
-
-    return message;
+    // Devolvemos el JSON tal cual lo recibimos (o procesado si prefieres)
+    // Aquí lo devuelvo limpio para que tu frontend lo consuma
+    return res.status(200).json({
+      success: true,
+      source: "API Oficial",
+      data: data
+    });
 
   } catch (error) {
-    console.error('Error obteniendo tasas:', error);
-    return '⚠️ No se pudo obtener la tasa de cambio en este momento.';
+    console.error('Error fetching tasa:', error);
+
+    // Fallback de emergencia (usa los datos manuales si falla la API)
+    return res.status(500).json({
+      success: false,
+      source: "Manual (Emergencia) - Falló la conexión",
+      error: error.message,
+      rates: { usd: 65, eur: 0 } // Tus valores de emergencia actuales
+    });
   }
 }
-
-module.exports = { getTasa };
