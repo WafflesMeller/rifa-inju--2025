@@ -1,19 +1,3 @@
-<<<<<<< HEAD
-import { useState, useEffect } from 'react'
-import './App.css' // Puedes mantener esto o borrarlo si prefieres estilos limpios
-
-function App() {
-  // Estados para manejar el formulario
-  const [titulo, setTitulo] = useState('PagomóvilBDV recibido')
-  const [texto, setTexto] = useState('Recibiste pago móvil de JUAN PEREZ por Bs. 1.250,00 el 04/12 Ref: 12345678')
-  
-  // Estado para la respuesta inmediata del servidor
-  const [resultado, setResultado] = useState(null)
-  
-  // Estado para la lista completa de notificaciones
-  const [historial, setHistorial] = useState([])
-=======
-// src/App.jsx
 import React, { useState, useMemo } from "react";
 import Navbar from "./components/Navbar";
 import FloatingCheckoutBar from "./components/FloatingCheckoutBar";
@@ -58,7 +42,6 @@ export default function App() {
   };
 
   const totalAmount = selectedTickets.length * TICKET_PRICE;
->>>>>>> 747ab5ced5efed75c454e0ada70cdd08519621f2
 
   // 1. Función para enviar los datos al Backend (Node.js)
   const procesarNotificacion = async (e) => {
