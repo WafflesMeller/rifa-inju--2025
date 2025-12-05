@@ -1,19 +1,15 @@
 // =====================================================================
-// ARCHIVO: api/procesar.js
+// ARCHIVO: api/procesar.js (Soporte Híbrido GET/POST)
 // =====================================================================
 import { createClient } from '@supabase/supabase-js';
 
 // 1. INICIALIZAR SUPABASE
-// NOTA IMPORTANTE: No escribas las claves aquí con "=".
-// Vercel ya las tiene guardadas en "Settings" y las inyecta aquí automáticamente.
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req, res) {
-    // -----------------------------------------------------------------
-    // CONFIGURACIÓN CORS
-    // -----------------------------------------------------------------
+    // CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,PUT,DELETE');
@@ -28,31 +24,34 @@ export default async function handler(req, res) {
     }
   
     // -----------------------------------------------------------------
-    // RECIBIR DATOS
+    // 2. RECIBIR DATOS (AHORA SOPORTA BODY Y QUERY)
     // -----------------------------------------------------------------
-    const { TituloNotificacion, TextoNotificacion } = req.query;
+    // Intentamos leer del BODY (Post) primero, si no hay nada, leemos del QUERY (Get)
+    const bodyData = req.body || {};
+    const queryData = req.query || {};
 
-    // Capturamos la hora exacta en que llega la petición al servidor
+    const TituloNotificacion = bodyData.TituloNotificacion || queryData.TituloNotificacion;
+    const TextoNotificacion = bodyData.TextoNotificacion || queryData.TextoNotificacion;
+
+    // Capturamos la hora
     const fechaExactaServidor = new Date().toISOString();
 
     if (!TituloNotificacion || !TextoNotificacion) {
-        return res.status(400).json({ error: 'Faltan parámetros' });
+        return res.status(400).json({ error: 'Faltan parámetros (Titulo o Texto)' });
     }
-    if (TextoNotificacion.trim() === '') {
+    if (String(TextoNotificacion).trim() === '') {
         return res.status(400).json({ success: false, mensaje: 'Texto vacío.' });
     }
 
     // -----------------------------------------------------------------
-    // LÓGICA DE PROCESAMIENTO (REGEX)
+    // LÓGICA DE PROCESAMIENTO (REGEX) - IGUAL QUE ANTES
     // -----------------------------------------------------------------
-    
     const parseMonto = (str) => {
         if (!str) return 0;
         let limpio = str.replace(/[^\d,]/g, ''); 
         return parseFloat(limpio.replace(',', '.')); 
     };
 
-    // Función para formato visual "Bs. 1.234,56"
     const formatearMontoVisual = (numero) => {
         return "Bs. " + numero.toLocaleString('es-VE', { 
             minimumFractionDigits: 2, 
@@ -76,10 +75,8 @@ export default async function handler(req, res) {
     if (tituloLimpio === 'PagomóvilBDV recibido') {
         data.tipo = 'PAGO_MOVIL';
         data.banco = 'BDV';
-        
         const regexFormato1 = /de (.+?) por Bs\. ?([\d\.,]+).*operación (\d+)/i;
         const regexFormato2 = /por Bs\. ?([\d\.,]+) del ([\d-]+).*Ref[:\s]+(\d+)/i;
-        
         const match1 = TextoNotificacion.match(regexFormato1);
         const match2 = TextoNotificacion.match(regexFormato2);
 
@@ -99,14 +96,12 @@ export default async function handler(req, res) {
             mensajeCliente = "Formato Pago Móvil no reconocido.";
         }
     } 
-
     // --- CASO B: OTROS BANCOS ---
     else if (tituloLimpio === 'Transferencia de otros bancos recibida') {
         data.tipo = 'TRANSFERENCIA_INTERBANCARIA';
         data.banco = 'OTROS';
         const regexOtros = /de (.+?) por Bs\. ?([\d\.,]+).*operación (\d+)/i;
         const match = TextoNotificacion.match(regexOtros);
-        
         if (match) {
             data.emisor = match[1].trim();
             data.monto = parseMonto(match[2]);
@@ -117,7 +112,6 @@ export default async function handler(req, res) {
             mensajeCliente = "Formato Otros Bancos no reconocido.";
         }
     } 
-
     // --- CASO C: TRANSFERENCIA BDV ---
     else if (tituloLimpio === 'Transferencia BDV recibida') {
         data.tipo = 'TRANSFERENCIA_INTERNA';
@@ -138,12 +132,11 @@ export default async function handler(req, res) {
     }
 
     // -----------------------------------------------------------------
-    // 5. GUARDAR EN SUPABASE
+    // GUARDAR EN SUPABASE
     // -----------------------------------------------------------------
     if (procesado) {
         try {
             const montoVisual = formatearMontoVisual(data.monto);
-
             const { error } = await supabase
                 .from('historial_pagos')
                 .insert({
@@ -155,24 +148,10 @@ export default async function handler(req, res) {
                     banco: data.banco,
                     fecha_procesado: fechaExactaServidor
                 });
-
-            if (error) {
-                console.error("❌ Error Supabase:", error);
-            } else {
-                console.log("✅ Guardado en Supabase con fecha:", fechaExactaServidor);
-            }
-
-        } catch (err) {
-            console.error("❌ Error inesperado:", err);
-        }
+            if (error) console.error("❌ Error Supabase:", error);
+            else console.log("✅ Guardado POST/GET exitoso");
+        } catch (err) { console.error("❌ Error inesperado:", err); }
     }
 
-    // -----------------------------------------------------------------
-    // 6. RESPUESTA FINAL
-    // -----------------------------------------------------------------
-    res.status(200).json({ 
-        success: procesado, 
-        mensaje: mensajeCliente, 
-        data: data 
-    });
+    res.status(200).json({ success: procesado, mensaje: mensajeCliente, data: data });
 }

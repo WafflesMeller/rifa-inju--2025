@@ -45,7 +45,7 @@ export default function App() {
   const totalAmount = selectedTickets.length * TICKET_PRICE;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-24">
+    <div className="min-h-screen text-gray-900 pb-24 font-poppins">
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -55,7 +55,7 @@ export default function App() {
         totalAmount={totalAmount}
       />
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="">
         {activeTab === "inicio" && (
           <HomePage TICKET_PRICE={TICKET_PRICE} setActiveTab={setActiveTab} />
         )}
