@@ -17,7 +17,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("inicio");
   const [selectedTickets, setSelectedTickets] = useState([]);
 
-  const TICKET_PRICE =  "3€";
+  const TICKET_PRICE =  "3";
 
   // --- CAMBIO FASE 2 ---
   // 1. Estado para guardar los tickets que vengan de Supabase (empieza vacío)
@@ -80,7 +80,7 @@ export default function App() {
   const totalAmount = selectedTickets.length * TICKET_PRICE;
 
   return (
-    <div className="min-h-screen text-gray-900 pb-24 font-poppins">
+    <div className="text-gray-900 pb-24 font-poppins">
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -90,9 +90,8 @@ export default function App() {
         totalAmount={totalAmount}
       />
 
-      <main className="">
         {activeTab === "inicio" && (
-          <HomePage TICKET_PRICE={TICKET_PRICE} setActiveTab={setActiveTab} />
+          <HomePage TICKET_PRICE={TICKET_PRICE} setActiveTab={setActiveTab} totalSold={soldTicketsSet.size} totalTickets={1000} />
         )}
 
         {activeTab === "oracle" && (
@@ -118,7 +117,6 @@ export default function App() {
             />
           )
         )}
-      </main>
 
       <FloatingCheckoutBar
         selectedTickets={selectedTickets}

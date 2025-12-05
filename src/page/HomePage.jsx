@@ -8,12 +8,12 @@ import PrizeCard from '../components/PrizeCard';
 import StatCounter from '../components/StatCounter';
 
 const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
-  const sold = totalSold || 0; 
+  const sold = totalSold || 0;
   const total = totalTickets || 1000;
   const percentage = Math.round((sold / total) * 100);
 
   return (
-    <div>
+    <>
       <section className="w-full min-h-screen flex flex-col bg-transparent">
         <div
           className="w-full flex-1 overflow-hidden"
@@ -143,9 +143,8 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
         </div>
       </section>
 
-<section className="w-full min-h-screen flex items-center justify-center py-6 sm:px-6 lg:px-8">
+<section className="w-full flex justify-center mt-10 py-3 sm:px-6 lg:px-8">
   <div className="w-full max-w-7xl flex flex-col items-center text-center">
-
     <div className="mb-8">
       <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900">Premios Increíbles</h3>
       <p className="mt-2 text-gray-500 text-lg">Tres oportunidades de ganar con tu mismo boleto</p>
@@ -161,26 +160,14 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
         bg="bg-indigo-800"
       />
 
-      <PrizeCard
-        variant="second"
-        rank="2do"
-        title="Smart TV 43'"
-        image="/tv.png"
-      />
+      <PrizeCard variant="second" rank="2do" title="Smart TV 43'" image="/tv.png" />
 
-      <PrizeCard
-        variant="third"
-        rank="3er"
-        title="$100 Dólares"
-        image="/dolar.png"
-      />
+      <PrizeCard variant="third" rank="3er" title="$100 Dólares" image="/dolar.png" />
     </div>
-
   </div>
 </section>
 
-
-    </div>
+    </>
   );
 };
 
