@@ -16,7 +16,7 @@ const PrizeCard = ({ rank, title, description, icon: Icon, color, image }) => (
           <img
             src={image}
             alt={title}
-            className="relative z-10 w-auto h-full object-contain drop-shadow-xl transform group-hover:scale-110 transition-transform duration-500"
+            className="relative z-10 w-auto h-30 object-contain drop-shadow-xl transform group-hover:scale-110 transition-transform duration-500"
           />
         </div>
       ) : (

@@ -83,16 +83,16 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
           />
           <PrizeCard
             rank="2do"
-            title="Smart TV 43''"
+            title="Smart TV 43'"
             description="Samsung Crystal UHD 4K, Smart Hub, Bluetooth."
-            image="https://damasco.vtexassets.com/arquivos/ids/157034-1200-auto?v=638745470355600000"
+            image="/tv.png"
             color="bg-purple-500"
           />
           <PrizeCard
             rank="3er"
             title="$100 Dólares"
-            description="Efectivo billetes nuevos o Zelle al instante."
-            icon={DollarSign}
+            description="En efectivo"
+            image="https://em-content.zobj.net/source/apple/118/banknote-with-dollar-sign_1f4b5.png"
             color="bg-green-500"
           />
         </div>
