@@ -67,7 +67,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                         onClick={() => setActiveTab('comprar')}
                         className="inline-flex items-center justify-center px-6 md:px-8 py-3 rounded-full text-base font-bold text-indigo-900 bg-white shadow-lg transform transition duration-200 hover:scale-105"
                       >
-                        Comprar Boleto ({TICKET_PRICE})
+                        Comprar Boleto • {TICKET_PRICE} €
                       </button>
 
                       <button
@@ -128,7 +128,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                     <div className="px-2">
                       <StatCounter
                         title="Valor del Boleto"
-                        value={`${TICKET_PRICE}`}
+                        value={`${TICKET_PRICE} €`}
                         icon={CircleDollarSign}
                         color="bg-green-500"
                         hint="A tasa Euro BCV • Pago seguro"
@@ -150,7 +150,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
       <p className="mt-2 text-gray-500 text-lg">Tres oportunidades de ganar con tu mismo boleto</p>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0 mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0 w-full">
       <PrizeCard
         variant="first"
         rank="1er"
