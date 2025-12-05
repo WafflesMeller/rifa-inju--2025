@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useMemo } from "react";
 import Navbar from "./components/Navbar";
 import FloatingCheckoutBar from "./components/FloatingCheckoutBar";
@@ -43,45 +44,6 @@ export default function App() {
 
   const totalAmount = selectedTickets.length * TICKET_PRICE;
 
-  // 1. Función para enviar los datos al Backend (Node.js)
-  const procesarNotificacion = async (e) => {
-    e.preventDefault();
-    try {
-      // Preparamos los parámetros para la URL 
-      const params = new URLSearchParams({
-        TituloNotificacion: titulo,
-        TextoNotificacion: texto
-      });
-
-      // Hacemos la petición al servidor local en el puerto 3000
-      const response = await fetch(`/api/procesar?${params}`);
-      const data = await response.json();
-      
-      // --- AQUÍ ESTÁ LA LÓGICA DEL MENSAJE ---
-      // Mostramos la alerta que viene del servidor (Éxito o Error)
-      alert(data.mensaje);
-
-      setResultado(data);
-      obtenerHistorial(); // Actualizamos la tabla de abajo
-    } catch (error) {
-      console.error("Error conectando con server:", error);
-      alert("❌ Error: No se pudo conectar con el servidor (¿Está encendido?)");
-    }
-  }
-
-  // 2. Función para cargar el historial guardado
-  const obtenerHistorial = async () => {
-    try {
-      const res = await fetch('http://localhost:3000/api/historial');
-      const data = await res.json();
-      setHistorial(data);
-    } catch (error) { console.error(error) }
-  }
-
-  // Cargar historial apenas se abre la página
-  useEffect(() => { obtenerHistorial() }, [])
-
-  // 3. La Interfaz Visual (HTML/JSX)
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-24">
       <Navbar
