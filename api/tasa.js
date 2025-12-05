@@ -46,7 +46,7 @@ async function getTasa() {
     return message;
 
   } catch (error) {
-    console.error('Error obteniendo tasa:', error);
+    console.error('Error obteniendo tasas:', error);
     return '⚠️ No se pudo obtener la tasa de cambio en este momento.';
   }
 }
