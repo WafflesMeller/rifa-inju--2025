@@ -9,7 +9,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
   const total = 1000;
 
   return (
-    <div className="space-y-8 px-4 sm:px-0">
+    <div className="space-y-8 px-4 sm:px-0 font-poppins">
       {/* Banner Hero */}
       <div className="relative bg-indigo-800 rounded-2xl shadow-xl overflow-hidden text-center sm:text-left">
         <div className="absolute inset-0 bg-linear-to-r from-blue-900 to-indigo-700 opacity-95"></div>
@@ -49,7 +49,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
             <div className="relative z-10 w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center">
               <div className="absolute inset-0 bg-blue-500 rounded-full filter blur-[60px] opacity-40"></div>
               <img
-                src="https://beravirtual.com/wp-content/uploads/2021/09/SBR-2025-AZUL-1-scaled.png"
+                src="/moto.png"
                 alt="Moto Bera SBR Azul"
                 className="relative w-full object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duración-500"
                 style={{
@@ -78,7 +78,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
             rank="1er"
             title="Moto SBR 2026"
             description="Azul Eléctrico, 0KM, papeles al día + Casco certificado."
-            image="https://beravirtual.com/wp-content/uploads/2021/09/SBR-2025-AZUL-1-scaled.png"
+            image="/moto.png"
             color="bg-blue-600"
           />
           <PrizeCard
