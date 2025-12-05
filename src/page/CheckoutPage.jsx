@@ -78,7 +78,7 @@ export default function CheckoutPage({ selectedTickets, totalAmount, onBack, onS
         .from('historial_pagos')
         .select('id') // Solo necesitamos el ID para marcarlo como usado
         .eq('referencia', formData.referencia)
-        .eq('monto_exacto', montoEnBs) // Usamos el monto redondeado
+        .eq('monto_numerico', montoEnBs) // Usamos el monto redondeado
         .eq('usada', false);
       
       if (pagoError) throw pagoError;
