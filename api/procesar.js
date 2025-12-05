@@ -112,23 +112,34 @@ export default async function handler(req, res) {
             mensajeCliente = "Formato Otros Bancos no reconocido.";
         }
     } 
-    // --- CASO C: TRANSFERENCIA BDV ---
+  // --- CASO C: TRANSFERENCIA BDV ---
     else if (tituloLimpio === 'Transferencia BDV recibida') {
         data.tipo = 'TRANSFERENCIA_INTERNA';
         data.banco = 'BDV';
-        const regexTrans = /monto de Bs\. ?([\d\.,]+).*Ref[:\s]+(\d+)/i;
-        const match = TextoNotificacion.match(regexTrans);
-        if (match) {
-            data.monto = parseMonto(match[1]);
-            data.referencia = match[2];
+
+        // FORMATO 1 (Nuevo): "...de ALEYKIS... por Bs.1,08 bajo el número de operación..."
+        const regexFormato1 = /de (.+?) por Bs\. ?([\d\.,]+).*operación (\d+)/i;
+        
+        // FORMATO 2 (Antiguo): "monto de Bs. 100 Ref: 123456"
+        const regexFormato2 = /monto de Bs\. ?([\d\.,]+).*Ref[:\s]+(\d+)/i;
+
+        const match1 = TextoNotificacion.match(regexFormato1);
+        const match2 = TextoNotificacion.match(regexFormato2);
+
+        if (match1) {
+            data.emisor = match1[1].trim();
+            data.monto = parseMonto(match1[2]);
+            data.referencia = match1[3];
             procesado = true;
-            mensajeCliente = "Transferencia BDV procesada.";
+            mensajeCliente = "Transferencia BDV (Con Nombre) procesada.";
+        } else if (match2) {
+            data.monto = parseMonto(match2[1]);
+            data.referencia = match2[2];
+            procesado = true;
+            mensajeCliente = "Transferencia BDV (Formato Simple) procesada.";
         } else {
             mensajeCliente = "Formato Transferencia BDV no reconocido.";
         }
-    } 
-    else {
-        mensajeCliente = "Título desconocido.";
     }
 
     // -----------------------------------------------------------------

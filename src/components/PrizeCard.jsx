@@ -1,28 +1,34 @@
 // src/components/PrizeCard.jsx
-import React from "react";
+import { Star } from 'lucide-react';
+import React from 'react';
 
-const PrizeCard = ({ variant = "second", rank = "2do", title, description, image }) => {
-  const isFirst = variant === "first";
+const PrizeCard = ({ variant = 'second', rank = '2do', title, description, image }) => {
+  const isFirst = variant === 'first';
+
+  // Fondo degradado SOLO para el primer premio
+  const firstPrizeBg = {
+    background: "linear-gradient(90deg,#0f172a 0%, #1e293b 50%, #312e81 100%)"
+  };
 
   return (
     <div
       className={`
-        rounded-2xl border 
+        rounded-2xl 
         overflow-hidden h-full flex flex-col shadow-sm 
         transform transition-all duration-300 
-        hover:shadow-2xl hover:scale-[1.05]
-        ${isFirst ? "bg-indigo-800 border-indigo-700 text-white" : "bg-white border-gray-100 text-gray-900"}
+        hover:shadow-lg hover:scale-[1.05]
+        ${isFirst ? ' text-white' : 'bg-white text-gray-900'}
       `}
+      style={isFirst ? firstPrizeBg : {}}
       aria-label={`${rank} Premio - ${title}`}
     >
-
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4">
         <div>
           <div
             className={`
               px-3 py-1 rounded-lg font-semibold text-sm 
-              ${isFirst ? "bg-white text-indigo-800" : "bg-gray-100 text-gray-700"}
+              ${isFirst ? 'bg-white text-indigo-800' : 'bg-gray-100 text-gray-700'}
             `}
           >
             {rank} Premio
@@ -31,10 +37,8 @@ const PrizeCard = ({ variant = "second", rank = "2do", title, description, image
 
         {/* Estrella SOLO en el primer premio */}
         {isFirst ? (
-          <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm shadow flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2l2.39 4.85L19 8l-3.45 3.37L16.79 16 12 13.77 7.21 16l1.24-4.63L5 8l4.61-.15L12 2z" fill="#FACC15"/>
-            </svg>
+          <div className="w-9 h-9 rounded-full bg-white/30 backdrop-blur-sm shadow flex items-center justify-center">
+            <Star className="text-yellow-300" />
           </div>
         ) : (
           <div className="w-9 h-9" />
@@ -47,8 +51,10 @@ const PrizeCard = ({ variant = "second", rank = "2do", title, description, image
           <img
             src={image}
             alt={title}
-            className={`object-contain max-h-44 md:max-h-48 transition-transform duration-300 ${isFirst ? "drop-shadow-lg" : ""}`}
-            style={{ width: "auto", maxWidth: "90%" }}
+            className={`object-contain max-h-44 md:max-h-48 transition-transform duration-300 ${
+              isFirst ? 'drop-shadow-lg' : ''
+            }`}
+            style={{ width: 'auto', maxWidth: '90%' }}
           />
         ) : (
           <div className="text-4xl">🎁</div>
@@ -57,11 +63,11 @@ const PrizeCard = ({ variant = "second", rank = "2do", title, description, image
 
       {/* Texto */}
       <div className="px-6 pb-6 text-center">
-        <h3 className={`text-lg md:text-xl font-extrabold ${isFirst ? "text-white" : "text-gray-900"}`}>
+        <h3 className={`text-lg md:text-xl font-extrabold ${isFirst ? 'text-white' : 'text-gray-900'}`}>
           {title}
         </h3>
 
-        <p className={`mt-2 text-sm ${isFirst ? "text-indigo-200" : "text-gray-500"}`}>
+        <p className={`mt-2 text-sm ${isFirst ? 'text-indigo-200' : 'text-gray-500'}`}>
           {description}
         </p>
       </div>
