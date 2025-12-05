@@ -3,11 +3,9 @@
 // =====================================================================
 import { createClient } from '@supabase/supabase-js';
 
-//inicializo las claves 
-VITE_SUPABASE_URL=https://rcrgfcdafpfqobvkqmgb.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_Ktd74e8STcjKrUPu3CJsMQ_NLm-PJX5
-
 // 1. INICIALIZAR SUPABASE
+// NOTA IMPORTANTE: No escribas las claves aquí con "=".
+// Vercel ya las tiene guardadas en "Settings" y las inyecta aquí automáticamente.
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -155,7 +153,6 @@ export default async function handler(req, res) {
                     titulo_original: TituloNotificacion,
                     texto_original: TextoNotificacion,
                     banco: data.banco,
-                    // --- NUEVO CAMPO AGREGADO ---
                     fecha_procesado: fechaExactaServidor
                 });
 

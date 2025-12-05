@@ -68,7 +68,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
     <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900">Premios Increíbles</h3>
     <p className="mt-2 text-gray-500 text-lg">Tres oportunidades de ganar con tu mismo boleto</p>
   </div>
-  
+
       {/* Grid responsivo: 1col en mobile, 3 cols en md+ */}
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0">
     <PrizeCard
@@ -78,9 +78,8 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
       description="Azul Eléctrico, 0KM, papeles al día + Casco certificado."
       image="/moto.png"
       // color de fondo ligero para resaltar (usar clase tailwind)
-      bg="bg-amber-50"
+      bg="bg-indigo-800"
     />
-
 
     <PrizeCard
       variant="second"
