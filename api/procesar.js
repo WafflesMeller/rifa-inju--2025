@@ -3,6 +3,10 @@
 // =====================================================================
 import { createClient } from '@supabase/supabase-js';
 
+//inicializo las claves 
+VITE_SUPABASE_URL=https://rcrgfcdafpfqobvkqmgb.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_Ktd74e8STcjKrUPu3CJsMQ_NLm-PJX5
+
 // 1. INICIALIZAR SUPABASE
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;

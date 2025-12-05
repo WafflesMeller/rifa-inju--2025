@@ -62,41 +62,45 @@ const HomePage = ({ TICKET_PRICE, setActiveTab }) => {
         </div>
       </div>
 
-      {/* Premios */}
-      <div className="pt-8">
-        <div className="text-center mb-10">
-          <h3 className="text-3xl font-extrabold text-gray-900">
-            Premios Increíbles
-          </h3>
-          <p className="mt-2 text-gray-500">
-            Tres oportunidades de ganar con tu mismo boleto
-          </p>
-        </div>
+{/* Premios: 3 cards al mismo nivel */}
+<div className="pt-10 pb-8">
+  <div className="text-center mb-8">
+    <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900">Premios Increíbles</h3>
+    <p className="mt-2 text-gray-500 text-lg">Tres oportunidades de ganar con tu mismo boleto</p>
+  </div>
+  
+      {/* Grid responsivo: 1col en mobile, 3 cols en md+ */}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0">
+    <PrizeCard
+      variant="first"
+      rank="1er"
+      title="Moto SBR 2026"
+      description="Azul Eléctrico, 0KM, papeles al día + Casco certificado."
+      image="/moto.png"
+      // color de fondo ligero para resaltar (usar clase tailwind)
+      bg="bg-amber-50"
+    />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <PrizeCard
-            rank="1er"
-            title="Moto SBR 2026"
-            description="Azul Eléctrico, 0KM, papeles al día + Casco certificado."
-            image="/moto.png"
-            color="bg-blue-600"
-          />
-          <PrizeCard
-            rank="2do"
-            title="Smart TV 43'"
-            description="Samsung Crystal UHD 4K, Smart Hub, Bluetooth."
-            image="/tv.png"
-            color="bg-purple-500"
-          />
-          <PrizeCard
-            rank="3er"
-            title="$100 Dólares"
-            description="En efectivo"
-            image="https://em-content.zobj.net/source/apple/118/banknote-with-dollar-sign_1f4b5.png"
-            color="bg-green-500"
-          />
-        </div>
-      </div>
+
+    <PrizeCard
+      variant="second"
+      rank="2do"
+      title="Smart TV 43'"
+      description="Samsung Crystal UHD 4K, Smart Hub, Bluetooth."
+      image="/tv.png"
+      // bg solo para first; en second no hace falta
+    />
+
+    <PrizeCard
+      variant="third"
+      rank="3er"
+      title="$100 Dólares"
+      description="En efectivo"
+      image="https://em-content.zobj.net/source/apple/118/banknote-with-dollar-sign_1f4b5.png"
+    />
+  </div>
+</div>
+
 
       {/* Estadísticas */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
