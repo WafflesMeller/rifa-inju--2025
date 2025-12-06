@@ -1,7 +1,6 @@
 // src/page/BuyTicketsPage.jsx
 import React, { useMemo } from 'react';
 import TicketNumber from '../components/TicketNumber';
-import { Sparkles } from 'lucide-react';
 
 const BuyTicketsPage = ({ tickets = [], selectedTickets = [], onToggle = () => {} }) => {
   const soldCount = useMemo(
@@ -9,7 +8,6 @@ const BuyTicketsPage = ({ tickets = [], selectedTickets = [], onToggle = () => {
     [tickets]
   );
   const availableCount = Math.max(0, tickets.length - soldCount);
-  const selectedCount = selectedTickets.length;
 
   return (
     // 1️⃣ — ESTA ES LA CORRECCIÓN PRINCIPAL
@@ -29,23 +27,8 @@ const BuyTicketsPage = ({ tickets = [], selectedTickets = [], onToggle = () => {
                   Selecciona tus números
                 </h1>
                 <p className="mt-2 text-sm text-indigo-100">
-                  Elige tus números de la suerte. Gris = Vendido, Azul = Seleccionado.
+                  Elige tus números de la suerte.
                 </p>
-              </div>
-
-              <div className="flex items-center gap-3 justify-center md:justify-end">
-                <div className="px-3 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium flex items-center gap-3">
-                  <span className="text-sm font-bold">{selectedCount}</span>
-                  <span className="text-xs text-white/80">seleccionado{selectedCount !== 1 ? 's' : ''}</span>
-                </div>
-
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400 text-yellow-900 font-semibold shadow-sm hover:scale-105 transition-transform duration-150"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  {selectedCount ? `Comprar (${selectedCount})` : 'Selecciona boletos'}
-                </button>
               </div>
             </div>
           </div>
