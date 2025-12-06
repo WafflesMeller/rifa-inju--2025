@@ -5,7 +5,7 @@ export default function CheckoutPage() {
 
   // ⚠️ CONFIGURA ESTO AQUÍ
   const RENDER_URL = "https://whatsapp-server-rifa.onrender.com/enviar-mensaje"; 
-  const MI_NUMERO = "584122930495"; // Tu número real con código de país (sin +)
+  const MI_NUMERO = "584242929579"; // Tu número real con código de país (sin +)
 
   const enviarPrueba = async () => {
     setLoading(true);
