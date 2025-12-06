@@ -20,7 +20,7 @@ export default function App() {
 
   const TICKET_PRICE =  "3";
 
-  // --- CAMBIO FASE 2 ---
+  // --- CAMBIO FASE 2 --------
   // 1. Estado para guardar los tickets que vengan de Supabase (empieza vacío)
   const [soldTicketsSet, setSoldTicketsSet] = useState(new Set());
   
