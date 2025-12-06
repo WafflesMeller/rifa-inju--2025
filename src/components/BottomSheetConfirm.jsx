@@ -27,15 +27,16 @@ const BottomSheetConfirm = ({ isOpen, onClose, selectedTickets = [], totalAmount
     <Sheet isOpen={Boolean(isOpen)} onClose={onClose}>
       <Sheet.Container
         className="rounded-t-2xl!"
-        style={{
-          background: 'linear-gradient(90deg,#0f172a 0%, #1e293b 50%, #312e81 100%)',
-        }}
       >
-        <Sheet.Header>
+        <div className="w-full">
           {/* Header: gradient + small handle */}
-          <div className=" px-4 pt-3 pb-2">
+          <div
+            className="rounded-t-2xl px-4 py-4"
+            style={{
+              background: 'linear-gradient(90deg,#0f172a 0%, #1e293b 50%, #312e81 100%)',
+            }}
+          >
             <div className="flex flex-col items-center">
-              <div className="w-12 h-1.5 bg-white/25 rounded-full mb-3" />
 
               <div className="w-full flex items-center justify-between gap-4">
                 <div>
@@ -50,11 +51,19 @@ const BottomSheetConfirm = ({ isOpen, onClose, selectedTickets = [], totalAmount
                     <MiniChip label={`${selectedTickets.length}`} sub="Boletos" />
                     <MiniChip label={`$${totalAmount}`} sub="Total" color="bg-yellow-400 text-yellow-900" />
                   </div>
+
+                  <button
+                    onClick={onClose}
+                    aria-label="Cerrar"
+                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+                  >
+                    <X className="w-5 h-5 text-white" />
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        </Sheet.Header>
+        </div>
 
         <Sheet.Content>
           <div className="w-full max-w-4xl mx-auto">
@@ -136,7 +145,7 @@ const MiniChip = ({ label, sub, color = 'bg-white text-gray-900' }) => (
     style={{ minWidth: 56 }}
   >
     <div className="text-sm leading-none">{label}</div>
-    <div className="text-xs leading-none text-white/80 mt-0.5">{sub}</div>
+    <div className="text-xs leading-none mt-0.5">{sub}</div>
   </div>
 );
 
