@@ -1,59 +1,22 @@
-// src/App.jsx
-import React, { useState, useEffect, useMemo } from "react";
-import { createClient } from '@supabase/supabase-js';
+import React, { useState, useMemo } from "react";
 import Navbar from "./components/Navbar";
 import FloatingCheckoutBar from "./components/FloatingCheckoutBar";
 import BuyTicketsPage from "./page/BuyTicketsPage";
 import OraclePage from "./page/OraclePage";
 import HomePage from "./page/HomePage";
-import CheckoutPage from "./page/CheckoutPage";
-
-// Inicializamos Supabase con las claves de tu archivo .env
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("inicio");
   const [selectedTickets, setSelectedTickets] = useState([]);
 
-  const TICKET_PRICE =  "3";
+  const TICKET_PRICE = 3;
 
-  // --- CAMBIO FASE 2 ---
-  // 1. Estado para guardar los tickets que vengan de Supabase (empieza vacío)
-  const [soldTicketsSet, setSoldTicketsSet] = useState(new Set());
-  
-  // 2. Estado para saber si seguimos cargando (opcional, para UI)
-  const [loading, setLoading] = useState(true);
-
-  // 3. Efecto: Se ejecuta una sola vez al cargar la página
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        // Consultamos la tabla 'tickets_vendidos'
-        const { data, error } = await supabase
-          .from('tickets_vendidos')
-          .select('numero');
-
-        if (error) {
-          console.error("❌ Error cargando tickets:", error);
-        } else {
-          // Convertimos la respuesta en un Set (lista sin duplicados)
-          const numerosOcupados = new Set(data.map(fila => fila.numero));
-          setSoldTicketsSet(numerosOcupados);
-          console.log("✅ Tickets cargados:", numerosOcupados.size);
-        }
-      } catch (err) {
-        console.error("❌ Error de conexión:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTickets();
-  }, []);
-  // --- FIN CAMBIO FASE 2 ---
+  // Datos simulados de tickets vendidos
+  const soldTicketsSet = useMemo(
+    () => new Set([15, 42, 100, 555, 777, 999, 123, 456, 888]),
+    []
+  );
 
   const tickets = useMemo(() => {
     return Array.from({ length: 1000 }, (_, i) => ({
@@ -80,8 +43,47 @@ export default function App() {
 
   const totalAmount = selectedTickets.length * TICKET_PRICE;
 
+  // 1. Función para enviar los datos al Backend (Node.js)
+  const procesarNotificacion = async (e) => {
+    e.preventDefault();
+    try {
+      // Preparamos los parámetros para la URL 
+      const params = new URLSearchParams({
+        TituloNotificacion: titulo,
+        TextoNotificacion: texto
+      });
+
+      // Hacemos la petición al servidor local en el puerto 3000
+      const response = await fetch(`http://localhost:3000/api/procesar?${params}`);
+      const data = await response.json();
+      
+      // --- AQUÍ ESTÁ LA LÓGICA DEL MENSAJE ---
+      // Mostramos la alerta que viene del servidor (Éxito o Error)
+      alert(data.mensaje);
+
+      setResultado(data);
+      obtenerHistorial(); // Actualizamos la tabla de abajo
+    } catch (error) {
+      console.error("Error conectando con server:", error);
+      alert("❌ Error: No se pudo conectar con el servidor (¿Está encendido?)");
+    }
+  }
+
+  // 2. Función para cargar el historial guardado
+  const obtenerHistorial = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/historial');
+      const data = await res.json();
+      setHistorial(data);
+    } catch (error) { console.error(error) }
+  }
+
+  // Cargar historial apenas se abre la página
+  useEffect(() => { obtenerHistorial() }, [])
+
+  // 3. La Interfaz Visual (HTML/JSX)
   return (
-    <div className="text-gray-900 pb-24 font-poppins">
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-24">
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -91,8 +93,9 @@ export default function App() {
         totalAmount={totalAmount}
       />
 
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {activeTab === "inicio" && (
-          <HomePage TICKET_PRICE={TICKET_PRICE} setActiveTab={setActiveTab} totalSold={soldTicketsSet.size} totalTickets={1000} />
+          <HomePage TICKET_PRICE={TICKET_PRICE} setActiveTab={setActiveTab} />
         )}
 
         {activeTab === "oracle" && (
@@ -103,39 +106,19 @@ export default function App() {
         )}
 
         {activeTab === "comprar" && (
-          loading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="text-2xl mb-4">⏳</div>
-              <p className="text-gray-500 font-bold animate-pulse">
-                Verificando disponibilidad...
-              </p>
-            </div>
-          ) : (
-            <BuyTicketsPage
-              tickets={tickets}
-              selectedTickets={selectedTickets}
-              onToggle={handleTicketToggle}
-            />
-          )
-        )}
-
-        {activeTab === "checkout" && (
-          <CheckoutPage 
+          <BuyTicketsPage
+            tickets={tickets}
             selectedTickets={selectedTickets}
-            totalAmount={totalAmount}
-            onBack={() => setActiveTab("comprar")} // Para que el botón "Volver" funcione
-            onSuccess={() => {
-              setSelectedTickets([]); // Limpiar carrito al terminar
-              setActiveTab("inicio"); // Mandar al inicio
-            }}
+            onToggle={handleTicketToggle}
           />
         )}
+      </main>
 
       <FloatingCheckoutBar
         selectedTickets={selectedTickets}
         totalAmount={totalAmount}
         onClear={() => setSelectedTickets([])}
-        onGoToComprar={() => setActiveTab("checkout")}
+        onGoToComprar={() => setActiveTab("comprar")}
       />
     </div>
   );
