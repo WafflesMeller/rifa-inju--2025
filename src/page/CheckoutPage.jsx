@@ -18,7 +18,7 @@ export default function CheckoutPage() {
         },
         body: JSON.stringify({
           numero: MI_NUMERO,
-          mensaje: "🤖 ¡Hola! Si estás leyendo esto, tu sistema de Rifa funciona perfectamente."
+          mensaje: "🤖 ¡Hola! maldito hombre."
         })
       });
 
