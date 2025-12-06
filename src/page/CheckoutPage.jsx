@@ -32,7 +32,7 @@ export default function CheckoutPage() {
 
     } catch (error) {
       console.error("Error:", error);
-      alert("⚠️ Error de conexión. Revisa la consola (F12) y asegúrate de haber activado CORS en Render.");
+      alert("⚠️ Error de conexión. Revisa la consola (F12) y asegúrate de haber activado CORS en Render ok.");
     } finally {
       setLoading(false);
     }
