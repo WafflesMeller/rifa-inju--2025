@@ -1,5 +1,6 @@
 // src/page/CheckoutPage.jsx
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
 
 // URL del Bot de WhatsApp en Render (¡REEMPLAZA ESTO CON TU URL REAL!)
