@@ -87,7 +87,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
     // 2. Datos Dinámicos (Monto y Descripción)
     const montoFormateado = montoEnBs.toFixed(2);
     // Descripción simple para evitar errores
-    const descripcion = encodeURIComponent(`Rifa ${selectedTickets.join(",")}`);
+    const descripcion = "9dxBliWt4XnVSB0LTqNasQ%3D%3D";
 
     // 3. Construir el Link Universal
     const linkBDV = `https://bdvdigital.banvenez.com/pagomovil?id=${RECEPTOR_ID}&phone=${RECEPTOR_TLF}&bank=${RECEPTOR_BANCO}&description=${descripcion}&amount=${montoFormateado}`;
