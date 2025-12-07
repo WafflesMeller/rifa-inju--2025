@@ -1,6 +1,6 @@
 // src/page/CheckoutPage.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabase.js";
 import { createPortal } from "react-dom"; 
 import ModalRecibo from "../components/ModalRecibo"; 
 import { 
