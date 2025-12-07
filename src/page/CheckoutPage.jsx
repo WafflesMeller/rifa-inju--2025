@@ -132,8 +132,26 @@ export default function CheckoutPage({
 
       // 3. Actualizar pago
       await supabase.from("historial_pagos").update({ usada: true, venta_id: ventaData.id }).eq("id", pagoId);
+      
+      // PASO 4 NUEVO: Registrar tickets individuales
+      
+      // Preparamos el array de objetos para insertar todo de una vez
+      const ticketsParaInsertar = selectedTickets.map((numero) => ({
+        numero: numero,              // Columna 'numero' en tu tabla tickets_vendidos
+        cedula_comprador: formData.cedula, // La cédula que pediste
+        venta_id: ventaData.id             // IMPORTANTE: Vinculamos al ID de la venta principal
+      }));
 
-      // 4. Bot (Fire and forget)
+      const { error: ticketsError } = await supabase
+        .from("tickets_vendidos")
+        .insert(ticketsParaInsertar);
+
+      if (ticketsError) {
+        // Si falla esto, es crítico (tendrías una venta sin tickets reservados)
+        throw new Error("Error reservando los números individuales: " + ticketsError.message);
+      }
+
+      // 5. Bot (Fire and forget)
       fetch(BOT_API_URL + "/enviar-mensaje", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
