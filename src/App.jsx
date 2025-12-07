@@ -7,6 +7,7 @@ import BuyTicketsPage from "./page/BuyTicketsPage";
 import OraclePage from "./page/OraclePage";
 import HomePage from "./page/HomePage";
 import CheckoutPage from "./page/CheckoutPage";
+import MyTicketsPage from "./page/MyTicketsPage";
 
 // Inicializamos Supabase
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -183,6 +184,12 @@ export default function App() {
               setActiveTab("inicio");
               window.location.reload(); 
             }}
+          />
+        )}
+
+        {activeTab === "mis-tickets" && (
+          <MyTicketsPage 
+             onBack={() => setActiveTab("inicio")} 
           />
         )}
 

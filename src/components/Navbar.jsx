@@ -1,6 +1,6 @@
 // src/components/Navbar.jsx
 import React, { useRef, useState, useLayoutEffect } from "react";
-import { Ticket, Sparkles } from "lucide-react";
+import { Ticket, Sparkles, Search } from "lucide-react"; // Importé Search para el icono (opcional)
 
 /**
  * Navbar sin carrito + active en bold + hover color como IA
@@ -8,7 +8,7 @@ import { Ticket, Sparkles } from "lucide-react";
  * Props:
  * - activeTab, setActiveTab
  * - isMobileMenuOpen, setIsMobileMenuOpen
- */
+ * */
 const Navbar = ({
   activeTab,
   setActiveTab,
@@ -26,9 +26,11 @@ const Navbar = ({
     opacity: 0,
   });
 
+  // 👇 1. AGREGAMOS "MIS TICKETS" AL ARRAY
   const desktopTabs = [
     { key: "inicio", label: "Inicio" },
     { key: "comprar", label: "Comprar Tickets" },
+    { key: "mis-tickets", label: "Mis Tickets" }, // <--- NUEVO
     { key: "oracle", label: "IA Mística" },
   ];
 
@@ -185,6 +187,16 @@ const Navbar = ({
               active={activeTab === "comprar"}
               onClick={() => {
                 setActiveTab("comprar");
+                setIsMobileMenuOpen(false);
+              }}
+            />
+
+            {/* 👇 2. AGREGAMOS EL LINK MÓVIL AQUÍ */}
+            <MobileLink
+              label="Mis Tickets"
+              active={activeTab === "mis-tickets"}
+              onClick={() => {
+                setActiveTab("mis-tickets");
                 setIsMobileMenuOpen(false);
               }}
             />
