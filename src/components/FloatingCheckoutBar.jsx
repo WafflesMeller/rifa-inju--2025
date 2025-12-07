@@ -124,12 +124,6 @@ const FloatingCheckoutBar = ({
           setIsSuccessOpen(true);
         }}
       />
-
-      {/* 2. Modal de Éxito (Confetti) */}
-      <PaymentSuccessModal 
-        isOpen={isSuccessOpen}
-        onClose={() => setIsSuccessOpen(false)}
-      />
     </>
   );
 };
