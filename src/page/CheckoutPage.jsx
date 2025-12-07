@@ -334,7 +334,7 @@ export default function CheckoutPage({
                 name="referencia"
                 value={formData.referencia}
                 onChange={handleChange}
-                maxLength={8} // A veces meten mas, pero limitamos visualmente
+                maxLength={4} // A veces meten mas, pero limitamos visualmente
                 placeholder="0000"
                 className="block w-full pl-12 pr-4 py-3 bg-white border border-indigo-200 rounded-lg text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xl font-mono tracking-[0.2em] transition-all"
               />
