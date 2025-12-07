@@ -151,6 +151,20 @@ export default function CheckoutPage({
       // Si pasamos aquí, el pago existe y está libre (usada === false)
       const pagoId = pagoEncontrado.id;
 
+      // 1.5 VERIFICACIÓN FINAL DE DISPONIBILIDAD Antes de crear la venta, revisamos por última vez si alguien nos ganó
+      const { data: ocupadosData, error: ocupadosError } = await supabase
+        .from('tickets_vendidos')
+        .select('numero')
+        .in('numero', selectedTickets); // Buscamos si nuestros tickets ya existen
+
+      if (ocupadosError) throw ocupadosError;
+
+      if (ocupadosData && ocupadosData.length > 0) {
+         const ticketsPerdidos = ocupadosData.map(t => t.numero).join(', ');
+         throw new Error(`⛔ ¡Lo sentimos! El ticket ${ticketsPerdidos} acaba de ser vendido a otra persona hace un momento.`);
+      }
+      // =====================================================================
+
       // 2. Crear Venta
       const { data: ventaData, error: ventaError } = await supabase
         .from("ventas")
