@@ -130,16 +130,26 @@ export default function CheckoutPage({
 
       if (ventaError) throw ventaError;
 
-      // 3. Actualizar pago
-      const { error: updateError } = await supabase
+      // 3. ACTUALIZAR EL PAGO
+      const { data: datosActualizados, error: updateError } = await supabase
         .from("historial_pagos")
         .update({ 
-            usada: true,           // Marca el pago como usado
-            venta_id: ventaData.id // Vincula el pago a esta nueva venta
+            usada: true, 
+            venta_id: ventaData.id 
         }) 
-        .eq("id", pagoId);         // Solo actualiza el pago específico que encontramos en el paso 1
+        .eq("id", pagoId)
+        .select(); // <--- IMPORTANTE: Esto nos devuelve la fila si se logró tocar
 
-      if (updateError) throw new Error("Error actualizando el estado del pago: " + updateError.message);
+      if (updateError) {
+          throw new Error("Error técnico al actualizar: " + updateError.message);
+      }
+
+      // 🔍 AQUÍ ESTÁ EL DIAGNÓSTICO
+      if (!datosActualizados || datosActualizados.length === 0) {
+          console.error("⛔ ALERTA: La operación update corrió, pero Supabase no modificó ninguna fila.");
+          console.error("Causa probable: Políticas RLS bloqueando el UPDATE.");
+          throw new Error("El sistema de seguridad bloqueó la actualización del pago.");
+      }
       
       // PASO 4 NUEVO: Registrar tickets individuales
       
