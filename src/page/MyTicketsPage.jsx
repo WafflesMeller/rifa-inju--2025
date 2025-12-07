@@ -1,6 +1,6 @@
 // src/page/MyTicketsPage.jsx
 import React, { useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../supabase';
 import { Search, Ticket, Calendar, User, AlertCircle } from 'lucide-react';
 
 export default function MyTicketsPage({ onBack }) {
