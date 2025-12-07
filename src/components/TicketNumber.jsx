@@ -18,7 +18,7 @@ const TicketNumber = ({ number, status, onSelect }) => {
     statusClasses =
       "bg-indigo-600 text-white border-indigo-600 shadow-lg transform scale-110 z-10";
   } else {
-    // ⚪ Disponible
+    // ⚪ Disponibles
     statusClasses =
       "bg-white text-gray-700 border-gray-200 hover:border-indigo-400 hover:text-indigo-600";
   }
