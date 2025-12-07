@@ -15,6 +15,26 @@ import {
   Receipt 
 } from "lucide-react";
 
+  
+  // Input Helper con Icono
+  const InputGroup = ({ label, icon: Icon, ...props }) => (
+    <div className="space-y-1.5">
+      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide ml-1">
+        {label}
+      </label>
+      <div className="relative group">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Icon className="h-4 w-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+        </div>
+        <input
+          {...props}
+          className="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all sm:text-sm"
+        />
+      </div>
+    </div>
+  );
+
+
 // URL del Bot de WhatsApp
 const BOT_API_URL = "https://whatsapp-server-rifa.onrender.com";
 
@@ -214,25 +234,6 @@ export default function CheckoutPage({
   };
 
   // --- Componentes UI Internos ---
-  
-  // Input Helper con Icono
-  const InputGroup = ({ label, icon: Icon, ...props }) => (
-    <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide ml-1">
-        {label}
-      </label>
-      <div className="relative group">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Icon className="h-4 w-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
-        </div>
-        <input
-          {...props}
-          className="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all sm:text-sm"
-        />
-      </div>
-    </div>
-  );
-
 // --- RENDERIZADO DEL MODAL DE ÉXITO ---
 if (mostrarConfirmacion) {
   // Usamos el Portal para sacarlo al body y que se vea ENCIMA del otro modal
