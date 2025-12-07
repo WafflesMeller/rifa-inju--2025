@@ -34,7 +34,7 @@ export const TextInput = ({ label, icon: Icon, id, className = "", ...props }) =
  * - Quité el icono dentro del input numérico para que se vea más limpio
  */
 export const CedulaInput = ({ value, onChange, name, label = "Cédula", required, id }) => {
-  const safeValue = value || "V-";
+  const safeValue = value || "V";
   const [tipo, numero] = safeValue.includes("-") ? safeValue.split("-") : ["V", ""];
 
   const triggerChange = (newTipo, newNumero) => {
@@ -94,7 +94,7 @@ export const PhoneInput = ({ value, onChange, name, label = "Teléfono", require
 
   const triggerChange = (newPrefijo, newNumero) => {
     onChange?.({
-      target: { name: name, value: `${newPrefijo}-${newNumero}` }
+      target: { name: name, value: `${newPrefijo}${newNumero}` }
     });
   };
 
