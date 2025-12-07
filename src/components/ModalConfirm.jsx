@@ -1,19 +1,20 @@
-// src/components/ModalConfirm.jsx
-import React, { Fragment } from "react";
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from "@headlessui/react";
-import { X } from "lucide-react";
-import CheckoutPage from "../page/CheckoutPage";
+import React, { Fragment } from 'react';
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
+import { X } from 'lucide-react';
+import CheckoutPage from '../page/CheckoutPage';
 
-export default function ModalConfirm({ 
-  isOpen, 
-  onClose, 
-  selectedTickets = [], 
-  totalAmount = 0, 
-  onClear = () => {} 
+export default function ModalConfirm({
+  isOpen,
+  onClose,
+  selectedTickets = [],
+  totalAmount = 0,
+  onClear = () => {},
+  onPaymentSuccess = () => {},
 }) {
   return (
     <Transition show={Boolean(isOpen)} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+      {/* CORRECCIÓN: z-1000 no existe. Usamos z-[999] o relative z-50 */}
+      <Dialog as="div" className="relative z-[999]" onClose={onClose}>
         
         {/* Backdrop (Fondo oscuro) */}
         <TransitionChild
@@ -25,12 +26,14 @@ export default function ModalConfirm({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+          {/* CORRECCIÓN: Aseguramos que el fondo cubra todo */}
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
         </TransitionChild>
 
-        {/* Container principal */}
-        <div className="fixed inset-0 z-10 w-screen overflow-hidden">
-          <div className="flex h-full min-h-full items-end justify-center p-0 text-center sm:items-center sm:p-4">
+        {/* Container principal para centrar */}
+        {/* CORRECCIÓN: z-[1000] para estar encima de todo (Navbar, FloatingBar, etc) */}
+        <div className="fixed inset-0 z-[1000] w-screen overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-0 text-center sm:items-center sm:p-4">
             
             <TransitionChild
               as={Fragment}
@@ -44,68 +47,63 @@ export default function ModalConfirm({
               <DialogPanel
                 className="
                   relative transform overflow-hidden 
-                  bg-gray-50 text-left shadow-lg transition-all
+                  bg-gray-50 text-left shadow-2xl transition-all
                   w-full max-w-5xl
                   
-                  /* 🔥🔥 CAMBIO 1: Altura y Bordes para Escritorio */
-                  h-full                 /* Móvil: Pantalla completa */
-                  sm:h-auto              /* Escritorio: Auto... */
-                  sm:max-h-[95vh]        /* ...pero con límite para forzar scroll interno */
+                  /* Altura y Bordes */
+                  h-[100dvh]               /* Móvil: Pantalla completa (dvh evita problemas con barra de safari) */
+                  sm:h-auto sm:max-h-[90vh] 
+                  rounded-none sm:rounded-2xl
                   
-                  rounded-none           /* Móvil: Cuadrado */
-                  sm:rounded-xl         /* Escritorio: Borde muy redondeado */
-                  
-                  flex flex-col          /* Estructura vertical (Header - Body - Footer) */
+                  flex flex-col
                 "
               >
                 {/* 1. HEADER (Fijo) */}
                 <div
-                  className="flex-none px-5 py-2"
+                  className="flex-none px-5 py-3"
                   style={{
-                    background: "linear-gradient(90deg,#0f172a 0%, #1e293b 50%, #312e81 100%)",
+                    background: 'linear-gradient(90deg,#0f172a 0%, #1e293b 50%, #312e81 100%)',
                   }}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <DialogTitle as="h3" className="text-lg font-bold text-white">
-                        Confirmar y Reportar Pago
+                        Confirmar Pago
                       </DialogTitle>
-                      <p className="text-sm text-white/80 mt-1">Completa los datos para validar tu pago</p>
+                      <p className="text-xs text-white/70">Completa los datos para validar</p>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={onClose}
-                        aria-label="Cerrar"
-                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition cursor-pointer"
-                      >
-                        <X className="w-5 h-5 text-white" />
-                      </button>
-                    </div>
+                    <button
+                      onClick={onClose}
+                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition cursor-pointer"
+                    >
+                      <X className="w-5 h-5 text-white" />
+                    </button>
                   </div>
                 </div>
 
                 {/* 2. BODY (Scrollable) */}
-                {/* 🔥🔥 CAMBIO 2: overflow-y-auto (AQUÍ ESTABA EL ERROR) */}
-                {/* Quitamos 'overflow-hidden' y ponemos 'overflow-y-auto' para que ESTA zona haga scroll */}
                 <div className="bg-white flex-1 overflow-y-auto relative">
-                  <div className="mx-auto w-full h-full sm:p- sm:pb-4">
+                  <div className="w-full h-full">
                     <CheckoutPage
                       selectedTickets={selectedTickets}
                       totalAmount={totalAmount}
                       onBack={onClose}
                       onSuccess={(result) => {
                         try {
-                          if (typeof onClear === "function") onClear();
+                          if (typeof onClear === 'function') onClear();
                         } catch (e) { console.error(e) }
+                        
                         onClose();
-                        console.log("Pago confirmado:", result);
+                        
+                        // Retraso para transición suave
+                        setTimeout(() => {
+                          onPaymentSuccess(result);
+                        }, 300);
                       }}
                     />
                   </div>
                 </div>
-
-
               </DialogPanel>
             </TransitionChild>
           </div>

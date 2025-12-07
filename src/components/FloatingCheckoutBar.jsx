@@ -2,34 +2,52 @@
 import React, { useState, useEffect } from "react";
 import { ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import ModalConfirm from "./ModalConfirm";
+import PaymentSuccessModal from "./PaymentSuccessModal";
 
 const FloatingCheckoutBar = ({
   selectedTickets = [],
   totalAmount = 0,
   onClear = () => {},
 }) => {
-  const [openConfirm, setOpenConfirm] = useState(false);
+  // ---------------------------------------------------------
+  // 1. ZONA DE HOOKS (SIEMPRE PRIMERO)
+  // ---------------------------------------------------------
+  
+  // Estado para animación de entrada/salida de la barra
   const [isVisible, setIsVisible] = useState(true);
 
-  // Efecto para mostrar/ocultar basado en si hay tickets
+  // Estado para abrir/cerrar el Modal de Formulario
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  // Estado para abrir/cerrar el Modal de Éxito (Confetti)
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+
+  // Efecto para controlar la visibilidad
   useEffect(() => {
     setIsVisible(selectedTickets.length > 0);
   }, [selectedTickets]);
 
+  // ---------------------------------------------------------
+  // 2. RETORNO TEMPRANO (DESPUÉS DE LOS HOOKS)
+  // ---------------------------------------------------------
   if (!selectedTickets || selectedTickets.length === 0) return null;
 
+  // ---------------------------------------------------------
+  // 3. RENDERIZADO
+  // ---------------------------------------------------------
   return (
     <>
+      {/* BARRA FLOTANTE */}
       <div
-        className={`fixed bottom-0 left-0 w-full z-50 transition-transform duration-500 ease-in-out ${
+        className={`fixed bottom-0 left-0 w-full z-40 transition-transform duration-500 ease-in-out ${
           isVisible ? "translate-y-0" : "translate-y-[150%]"
         }`}
       >
-        {/* Contenedor con efecto Glassmorphism (Minimalista) */}
+        {/* Contenedor con efecto Glassmorphism */}
         <div className="bg-white/90 backdrop-blur-xl border-t border-gray-200 shadow-[0_-5px_30px_-10px_rgba(0,0,0,0.1)] px-4 py-3 md:py-4">
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
             
-            {/* IZQUIERDA: Información de precio y cantidad */}
+            {/* IZQUIERDA: Información de precio */}
             <div className="flex flex-col justify-center">
               <div className="flex items-center gap-2 text-indigo-600 mb-0.5">
                 <ShoppingCart className="w-4 h-4" />
@@ -45,7 +63,7 @@ const FloatingCheckoutBar = ({
               </div>
             </div>
 
-            {/* CENTRO (Oculto en móviles muy pequeños): Lista de números sutil */}
+            {/* CENTRO: Lista de números (oculto en móviles pequeños) */}
             <div className="hidden md:flex flex-1 justify-end px-6 overflow-hidden">
               <div className="flex flex-wrap gap-1.5 justify-end max-w-md">
                 {selectedTickets.slice(0, 6).map((n) => (
@@ -64,9 +82,9 @@ const FloatingCheckoutBar = ({
               </div>
             </div>
 
-            {/* DERECHA: Acciones */}
+            {/* DERECHA: Botones de Acción */}
             <div className="flex items-center gap-3 md:gap-4">
-              {/* Botón Limpiar (Minimalista: solo icono/texto gris) */}
+              {/* Botón Limpiar */}
               <button
                 onClick={onClear}
                 className="group flex flex-col md:flex-row items-center justify-center text-gray-400 hover:text-red-500 transition-colors p-2"
@@ -76,10 +94,10 @@ const FloatingCheckoutBar = ({
                 <span className="hidden md:block ml-1 text-sm font-medium">Borrar</span>
               </button>
 
-              {/* Botón Principal ÚNICO: Reportar Pago */}
+              {/* Botón Pagar (Abre el ModalConfirm) */}
               <button
-                onClick={() => setOpenConfirm(true)}
-                className="relative overflow-hidden group bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center gap-2"
+                onClick={() => setIsConfirmOpen(true)}
+                className="relative overflow-hidden group bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <div className="text-left leading-tight">
                   <span className="block text-xs text-indigo-200 font-medium">Finalizar</span>
@@ -93,14 +111,25 @@ const FloatingCheckoutBar = ({
         </div>
       </div>
 
-      {/* Modal de Confirmación */}
-      <ModalConfirm
-        isOpen={openConfirm}
-        onClose={() => setOpenConfirm(false)}
-        selectedTickets={selectedTickets}
-        totalAmount={totalAmount}
-        // Pasamos onClear si tu modal lo necesita al cerrar exitosamente
-        onClear={onClear} 
+      {/* --- MODALES --- */}
+
+      {/* 1. Modal de Confirmación (Formulario) */}
+      <ModalConfirm 
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        selectedTickets={selectedTickets} // Usamos las props del componente padre
+        totalAmount={totalAmount}         // Usamos las props del componente padre
+        onClear={onClear}
+        // Cuando el pago es exitoso en el formulario, cerramos ese y abrimos el de éxito
+        onPaymentSuccess={() => {
+          setIsSuccessOpen(true);
+        }}
+      />
+
+      {/* 2. Modal de Éxito (Confetti) */}
+      <PaymentSuccessModal 
+        isOpen={isSuccessOpen}
+        onClose={() => setIsSuccessOpen(false)}
       />
     </>
   );
