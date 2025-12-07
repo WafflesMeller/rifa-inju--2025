@@ -18,13 +18,15 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("inicio");
   const [selectedTickets, setSelectedTickets] = useState([]);
 
-  const TICKET_PRICE =  "3";
+  const TICKET_PRICE = "3";
 
-  // 1. Estado para guardar los tickets vendidos
+  // Estado para guardar los tickets vendidos
   const [soldTicketsSet, setSoldTicketsSet] = useState(new Set());
   const [loading, setLoading] = useState(true);
+  // Estado para mostrar carga cuando verifica disponibilidad
+  const [verificando, setVerificando] = useState(false); 
 
-  // --- EFECTO: CARGAR VENDIDOS DE SUPABASE ---
+  // --- 1. CARGAR VENDIDOS AL INICIO ---
   useEffect(() => {
     const fetchTickets = async () => {
       try {
@@ -35,14 +37,11 @@ export default function App() {
         if (error) {
           console.error("❌ Error cargando tickets:", error);
         } else {
-          // CORRECCIÓN 1: Aseguramos que lo que viene de la BD sea string de 3 dígitos
-          // Ejemplo: Si viene 5, lo convierte en "005". Si viene "5", también.
+          // Normalizamos a string de 3 dígitos
           const numerosOcupados = new Set(
             data.map(fila => fila.numero.toString().padStart(3, '0'))
           );
-          
           setSoldTicketsSet(numerosOcupados);
-          console.log("✅ Tickets ocupados cargados:", numerosOcupados.size);
         }
       } catch (err) {
         console.error("❌ Error de conexión:", err);
@@ -54,15 +53,12 @@ export default function App() {
     fetchTickets();
   }, []);
 
-  // --- MEMO: GENERAR LOS 1000 TICKETS (000 - 999) ---
+  // --- 2. GENERAR TABLERO ---
   const tickets = useMemo(() => {
     return Array.from({ length: 1000 }, (_, i) => {
-      
-      // CORRECCIÓN 2: Generamos IDs como "000", "001"... "999"
       const idFormateado = i.toString().padStart(3, '0');
-      
       return {
-        id: idFormateado, // Ahora el ID es texto: "005"
+        id: idFormateado,
         status: soldTicketsSet.has(idFormateado) ? "sold" : "available",
       };
     });
@@ -79,14 +75,57 @@ export default function App() {
   };
 
   const handleAddFromOracle = (number) => {
-    // El Oráculo también debe devolver strings (ej: "042"), 
-    // pero por seguridad lo convertimos aquí si es necesario.
     const numString = number.toString().padStart(3, '0');
-    
     setSelectedTickets((prev) =>
       prev.includes(numString) ? prev : [...prev, numString]
     );
   };
+
+  // --- 3. NUEVA FUNCIÓN: VERIFICAR ANTES DE PAGAR ---
+  const handleProceedToCheckout = async () => {
+    if (selectedTickets.length === 0) return;
+    
+    setVerificando(true); // Podrías usar esto para poner un spinner en el botón flotante
+
+    try {
+      // Preguntamos a Supabase: "¿Alguno de estos tickets YA existe en la tabla vendidos?"
+      const { data, error } = await supabase
+        .from('tickets_vendidos')
+        .select('numero')
+        .in('numero', selectedTickets); // Check masivo eficiente
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        // 🚨 CASO: ALGUIEN NOS GANÓ DE MANO
+        const vendidosEncontrados = data.map(d => d.numero.toString().padStart(3, '0'));
+        
+        // 1. Actualizamos el tablero visualmente (los ponemos naranja)
+        setSoldTicketsSet(prev => {
+           const nuevoSet = new Set(prev);
+           vendidosEncontrados.forEach(n => nuevoSet.add(n));
+           return nuevoSet;
+        });
+
+        // 2. Los sacamos del carrito del usuario
+        setSelectedTickets(prev => prev.filter(t => !vendidosEncontrados.includes(t)));
+
+        // 3. Avisamos al usuario
+        alert(`⚠️ Lo sentimos. Los siguientes números acaban de ser vendidos a otra persona: ${vendidosEncontrados.join(", ")}. Han sido removidos de tu selección.`);
+      
+      } else {
+        // ✅ CASO: TODO LIMPIO, PASE A PAGAR
+        setActiveTab("checkout");
+      }
+
+    } catch (err) {
+      console.error("Error verificando tickets:", err);
+      alert("Error de conexión al verificar los tickets. Intenta de nuevo.");
+    } finally {
+      setVerificando(false);
+    }
+  };
+
 
   const totalAmount = selectedTickets.length * parseFloat(TICKET_PRICE);
 
@@ -122,7 +161,7 @@ export default function App() {
             <div className="flex flex-col items-center justify-center py-20">
               <div className="text-2xl mb-4">⏳</div>
               <p className="text-gray-500 font-bold animate-pulse">
-                Verificando disponibilidad...
+                Cargando tickets...
               </p>
             </div>
           ) : (
@@ -142,19 +181,31 @@ export default function App() {
             onSuccess={() => {
               setSelectedTickets([]); 
               setActiveTab("inicio");
-              // Opcional: Podrías recargar la página o volver a hacer fetch 
-              // para actualizar los vendidos en tiempo real
               window.location.reload(); 
             }}
           />
         )}
 
+      {/* AQUÍ CONECTAMOS LA VERIFICACIÓN:
+        En lugar de ir directo a 'checkout', llamamos a handleProceedToCheckout 
+      */}
       <FloatingCheckoutBar
         selectedTickets={selectedTickets}
         totalAmount={totalAmount}
         onClear={() => setSelectedTickets([])}
-        onGoToComprar={() => setActiveTab("checkout")}
+        onGoToComprar={handleProceedToCheckout} // <--- CAMBIO CLAVE AQUÍ
       />
+      
+      {/* Opcional: Overlay de carga mientras verifica */}
+      {verificando && (
+        <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center">
+            <div className="bg-white p-4 rounded-lg shadow-xl flex items-center gap-3">
+                <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"/>
+                <span className="font-semibold text-gray-700">Verificando disponibilidad...</span>
+            </div>
+        </div>
+      )}
+
     </div>
   );
 }
