@@ -96,17 +96,33 @@ export default function CheckoutPage({
 
     try {
       // 1. Validar referencia (Simulación de tu lógica existente)
+        // A. Calcular la fecha límite (Ahora - 48 horas)
+      const fechaLimite = new Date();
+      fechaLimite.setHours(fechaLimite.getHours() - 48);
+          // Convertimos a formato ISO para que Supabase lo entienda
+      const fechaISO = fechaLimite.toISOString(); 
+
+        // B. Validar referencia con filtro de tiempo
       const { data: pagoData, error: pagoError } = await supabase
         .from("historial_pagos")
         .select("id")
-        .eq("referencia", formData.referencia)
-        .eq("monto_numerico", montoEnBs) // Asegúrate que tu DB maneje márgenes de error de céntimos si es necesario
-        .eq("usada", false);
+        .like("referencia", `%${formData.referencia}`) // Últimos 4 dígitos
+        .eq("monto_numerico", montoEnBs)             // Monto exacto
+        .eq("usada", false)                          // Que no esté usada
+        
+          // 👇👇 FILTRO NUEVO DE 48 HORAS 👇👇
+        .gte("created_at", fechaISO)                 
+          // 👆 Significa: "Trae pagos creados DESPUÉS de hace 48h"
+        
+        .order('created_at', { ascending: true })    // Si hay duplicados recientes, toma el más viejo de ellos
+        .limit(1);
 
       if (pagoError) throw pagoError;
+
       if (!pagoData || pagoData.length === 0) {
-        throw new Error("Referencia no encontrada o monto incorrecto.");
+        throw new Error("No se encontró un pago reciente (48h) con esa referencia y monto.");
       }
+      
       const pagoId = pagoData[0].id;
 
       // 2. Crear Venta
