@@ -25,13 +25,8 @@ const OraclePage = ({ onAddNumbers, soldTickets }) => {
 
   return (
     // CAMBIO 1: Contenedor principal ocupa toda la pantalla, tiene el fondo y centra el contenido
-    <div className="min-h-screen w-full bg-linear-to-br from-indigo-900 via-purple-900 to-indigo-800 flex items-center justify-center overflow-hidden relative text-white p-4">
-      {/* Decoración de fondo (ahora cubre toda la pantalla) */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20 pointer-events-none">
-        <div className="absolute top-10 left-10 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-        <div className="absolute top-10 right-10 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
-      </div>
+    <div className="min-h-screen w-full  flex items-center justify-center overflow-hidden relative text-white p-4"
+    style={{ background: 'linear-gradient(90deg,#0f172a 0%, #1e293b 50%, #312e81 100%)' }}>
 
       {/* Contenedor del contenido centrado */}
       <div className="max-w-3xl w-full relative z-10 text-center">
