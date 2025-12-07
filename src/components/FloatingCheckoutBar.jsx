@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import ModalConfirm from "./ModalConfirm";
-import PaymentSuccessModal from "./PaymentSuccessModal";
 
 const FloatingCheckoutBar = ({
   selectedTickets = [],
