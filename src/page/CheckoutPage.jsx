@@ -38,11 +38,11 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         const res = await fetch('/api/tasa');
         if (!res.ok) throw new Error('Err');
         const data = await res.json();
-        const precioOficial = data?.current?.eur || 65; // Fallback seguro
+        const precioOficial = data?.current?.eur
         if (mounted) setTasaBCV(precioOficial);
       } catch (err) {
         console.error(err);
-        if (mounted) setTasaBCV(65);
+        if (mounted) setTasaBCV(300.51);
       } finally {
         if (mounted) setLoadingTasa(false);
       }
