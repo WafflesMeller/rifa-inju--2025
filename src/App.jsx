@@ -8,7 +8,7 @@ import OraclePage from "./page/OraclePage";
 import HomePage from "./page/HomePage";
 import CheckoutPage from "./page/CheckoutPage";
 
-// Inicializamos Supabase con las claves de tu archivo .env
+// Inicializamos Supabase
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -20,18 +20,14 @@ export default function App() {
 
   const TICKET_PRICE =  "3";
 
-  // --- CAMBIO FASE 2 --------
-  // 1. Estado para guardar los tickets que vengan de Supabase (empieza vacío)
+  // 1. Estado para guardar los tickets vendidos
   const [soldTicketsSet, setSoldTicketsSet] = useState(new Set());
-  
-  // 2. Estado para saber si seguimos cargando (opcional, para UI)
   const [loading, setLoading] = useState(true);
 
-  // 3. Efecto: Se ejecuta una sola vez al cargar la página
+  // --- EFECTO: CARGAR VENDIDOS DE SUPABASE ---
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        // Consultamos la tabla 'tickets_vendidos'
         const { data, error } = await supabase
           .from('tickets_vendidos')
           .select('numero');
@@ -39,10 +35,14 @@ export default function App() {
         if (error) {
           console.error("❌ Error cargando tickets:", error);
         } else {
-          // Convertimos la respuesta en un Set (lista sin duplicados)
-          const numerosOcupados = new Set(data.map(fila => fila.numero));
+          // CORRECCIÓN 1: Aseguramos que lo que viene de la BD sea string de 3 dígitos
+          // Ejemplo: Si viene 5, lo convierte en "005". Si viene "5", también.
+          const numerosOcupados = new Set(
+            data.map(fila => fila.numero.toString().padStart(3, '0'))
+          );
+          
           setSoldTicketsSet(numerosOcupados);
-          console.log("✅ Tickets cargados:", numerosOcupados.size);
+          console.log("✅ Tickets ocupados cargados:", numerosOcupados.size);
         }
       } catch (err) {
         console.error("❌ Error de conexión:", err);
@@ -53,13 +53,19 @@ export default function App() {
 
     fetchTickets();
   }, []);
-  // --- FIN CAMBIO FASE 2 ---
 
+  // --- MEMO: GENERAR LOS 1000 TICKETS (000 - 999) ---
   const tickets = useMemo(() => {
-    return Array.from({ length: 1000 }, (_, i) => ({
-      id: i,
-      status: soldTicketsSet.has(i) ? "sold" : "available",
-    }));
+    return Array.from({ length: 1000 }, (_, i) => {
+      
+      // CORRECCIÓN 2: Generamos IDs como "000", "001"... "999"
+      const idFormateado = i.toString().padStart(3, '0');
+      
+      return {
+        id: idFormateado, // Ahora el ID es texto: "005"
+        status: soldTicketsSet.has(idFormateado) ? "sold" : "available",
+      };
+    });
   }, [soldTicketsSet]);
 
   const handleTicketToggle = (number) => {
@@ -73,12 +79,16 @@ export default function App() {
   };
 
   const handleAddFromOracle = (number) => {
+    // El Oráculo también debe devolver strings (ej: "042"), 
+    // pero por seguridad lo convertimos aquí si es necesario.
+    const numString = number.toString().padStart(3, '0');
+    
     setSelectedTickets((prev) =>
-      prev.includes(number) ? prev : [...prev, number]
+      prev.includes(numString) ? prev : [...prev, numString]
     );
   };
 
-  const totalAmount = selectedTickets.length * TICKET_PRICE;
+  const totalAmount = selectedTickets.length * parseFloat(TICKET_PRICE);
 
   return (
     <div className="text-gray-900 pb-24 font-poppins">
@@ -92,7 +102,12 @@ export default function App() {
       />
 
         {activeTab === "inicio" && (
-          <HomePage TICKET_PRICE={TICKET_PRICE} setActiveTab={setActiveTab} totalSold={soldTicketsSet.size} totalTickets={1000} />
+          <HomePage 
+            TICKET_PRICE={TICKET_PRICE} 
+            setActiveTab={setActiveTab} 
+            totalSold={soldTicketsSet.size} 
+            totalTickets={1000} 
+          />
         )}
 
         {activeTab === "oracle" && (
@@ -123,10 +138,13 @@ export default function App() {
           <CheckoutPage 
             selectedTickets={selectedTickets}
             totalAmount={totalAmount}
-            onBack={() => setActiveTab("comprar")} // Para que el botón "Volver" funcione
+            onBack={() => setActiveTab("comprar")}
             onSuccess={() => {
-              setSelectedTickets([]); // Limpiar carrito al terminar
-              setActiveTab("inicio"); // Mandar al inicio
+              setSelectedTickets([]); 
+              setActiveTab("inicio");
+              // Opcional: Podrías recargar la página o volver a hacer fetch 
+              // para actualizar los vendidos en tiempo real
+              window.location.reload(); 
             }}
           />
         )}
