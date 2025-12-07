@@ -131,7 +131,15 @@ export default function CheckoutPage({
       if (ventaError) throw ventaError;
 
       // 3. Actualizar pago
-      await supabase.from("historial_pagos").update({ usada: true, venta_id: ventaData.id }).eq("id", pagoId);
+      const { error: updateError } = await supabase
+        .from("historial_pagos")
+        .update({ 
+            usada: true,           // Marca el pago como usado
+            venta_id: ventaData.id // Vincula el pago a esta nueva venta
+        }) 
+        .eq("id", pagoId);         // Solo actualiza el pago específico que encontramos en el paso 1
+
+      if (updateError) throw new Error("Error actualizando el estado del pago: " + updateError.message);
       
       // PASO 4 NUEVO: Registrar tickets individuales
       
