@@ -77,6 +77,25 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
     }
   };
 
+  // --- NUEVA FUNCIÓN: Abrir Link Universal BDV ---
+  const abrirLinkBDV = () => {
+    // 1. Datos Fijos (Tus datos)
+    const RECEPTOR_ID = "V26597356";
+    const RECEPTOR_TLF = "584242929579";
+    const RECEPTOR_BANCO = "0102";
+
+    // 2. Datos Dinámicos (Monto y Descripción)
+    const montoFormateado = montoEnBs.toFixed(2);
+    // Descripción simple para evitar errores
+    const descripcion = encodeURIComponent(`Rifa ${selectedTickets.join(",")}`);
+
+    // 3. Construir el Link Universal
+    const linkBDV = `https://bdvdigital.banvenez.com/pagomovil?id=${RECEPTOR_ID}&phone=${RECEPTOR_TLF}&bank=${RECEPTOR_BANCO}&description=${descripcion}&amount=${montoFormateado}`;
+
+    // 4. Abrir en nueva pestaña (En móvil abrirá la App)
+    window.open(linkBDV, '_blank');
+  };
+
 // --- Lógica de Envío BLINDADA ---
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -330,6 +349,18 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
           >
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             {copied ? '¡Datos Copiados!' : 'Copiar Datos Bancarios'}
+          </button>
+
+          <button 
+            type="button"
+            onClick={abrirLinkBDV}
+            className="mt-3 w-full bg-white text-emerald-800 font-bold py-3 px-4 rounded-lg shadow-lg border-2 border-emerald-500/30 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 active:scale-95"
+          >
+            {/* Icono de Smartphone/App */}
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-emerald-700">
+              <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/>
+            </svg>
+            Abrir App BDV (Monto Listo)
           </button>
         </div>
       </div>
