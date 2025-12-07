@@ -131,7 +131,7 @@ export default function App() {
   const totalAmount = selectedTickets.length * parseFloat(TICKET_PRICE);
 
   return (
-    <div className="text-gray-900 pb-24 font-poppins">
+    <div className="text-gray-900 font-poppins">
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
