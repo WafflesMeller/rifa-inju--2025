@@ -1,6 +1,7 @@
 // src/page/CheckoutPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../supabaseClient";
+import ModalConfirm from "../components/ModalConfirm"; // O la ruta donde lo tengas
 import { 
   ArrowLeft, 
   Copy, 
@@ -37,6 +38,9 @@ export default function CheckoutPage({
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [datosVentaFinal, setDatosVentaFinal] = useState(null);
 
   // --- Lógica de Tasa y Cálculos ---
   useEffect(() => {
@@ -193,11 +197,13 @@ export default function CheckoutPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           numero: formData.telefono, 
-          mensaje: `✅ Compra Exitosa. Tickets: ${selectedTickets.join(", ")}. ID: #${ventaData.id}` 
+          mensaje: `Hola ${formData.nombre} 👋\n\n✅ Tu compra fue procesada con éxito.\n🎟️ Tickets: ${selectedTickets.join(", ")}\n🧾 ID de Recibo: #${ventaData.id}\n\n¡Mucha suerte! 🍀`
         }),
       }).catch(console.warn);
 
-      onSuccess({ ...ventaData, tickets: selectedTickets });
+      const datosFinales = { ...ventaData, tickets: selectedTickets };
+      setDatosVentaFinal(datosFinales);
+      setMostrarConfirmacion(true);
 
     } catch (err) {
       console.error(err);
@@ -227,6 +233,20 @@ export default function CheckoutPage({
     </div>
   );
 
+// --- RENDERIZADO DEL MODAL DE ÉXITO ---
+  if (mostrarConfirmacion) {
+    return (
+      <ModalConfirm 
+        isOpen={true}
+        data={datosVentaFinal} // Pasamos la info de la venta al modal
+        onClose={() => {
+            // Cuando cierren el ModalConfirm, ahí sí ejecutamos el onSuccess original
+            // para que limpie el carrito o cierre la página de checkout.
+            onSuccess(datosVentaFinal); 
+        }}
+      />
+    );
+  }
   return (
     <div className="flex flex-col lg:flex-row min-h-full bg-white">
       
