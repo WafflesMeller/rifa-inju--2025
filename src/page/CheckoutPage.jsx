@@ -1,7 +1,8 @@
 // src/page/CheckoutPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../supabaseClient";
-import ModalConfirm from "../components/ModalConfirm"; // O la ruta donde lo tengas
+import { createPortal } from "react-dom"; 
+import ModalConfirm from "../components/ModalConfirm"; 
 import { 
   ArrowLeft, 
   Copy, 
@@ -235,16 +236,19 @@ export default function CheckoutPage({
 
 // --- RENDERIZADO DEL MODAL DE ÉXITO ---
   if (mostrarConfirmacion) {
-    return (
+    // Usamos createPortal para "sacar" el modal del Checkout 
+    // y ponerlo encima de toda la aplicación.
+    return createPortal(
       <ModalConfirm 
         isOpen={true}
-        data={datosVentaFinal} // Pasamos la info de la venta al modal
+        data={datosVentaFinal}
         onClose={() => {
-            // Cuando cierren el ModalConfirm, ahí sí ejecutamos el onSuccess original
-            // para que limpie el carrito o cierre la página de checkout.
+            // Esto llamará al onSuccess de App.jsx
+            // lo que limpiará el carrito y te mandará a "inicio"
             onSuccess(datosVentaFinal); 
         }}
-      />
+      />,
+      document.body // <--- EL DESTINO ES EL BODY DEL HTML
     );
   }
   return (
