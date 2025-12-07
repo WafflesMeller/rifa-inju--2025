@@ -9,12 +9,10 @@ const TicketNumber = ({ number, status, onSelect }) => {
   let statusClasses = "";
 
   if (status === "sold" || status === "vendido") {
-    // 🟠 CAMBIO AQUÍ: Estilo solicitado
-    // bg-gray-50: Fondo gris casi blanco
-    // text-orange-500: Letra naranja
-    // border-orange-400: Borde naranja delgado
+    // 🟠 CAMBIO AQUÍ: Agregamos 'opacity-60' para el efecto deshabilitado
+    // Mantenemos el borde y texto naranja, pero todo se ve más "apagado"
     statusClasses =
-      "bg-gray-50 text-orange-500 border-orange-400 cursor-not-allowed"; 
+      "bg-gray-50 text-orange-500 border-orange-400 cursor-not-allowed opacity-60"; 
   } else if (status === "selected") {
     // 🟣 Seleccionado
     statusClasses =
