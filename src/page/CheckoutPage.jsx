@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../supabaseClient";
 import { createPortal } from "react-dom"; 
-import ModalConfirm from "../components/ModalConfirm"; 
+import ModalRecibo from "../components/ModalRecibo"; 
 import { 
   ArrowLeft, 
   Copy, 
@@ -235,22 +235,20 @@ export default function CheckoutPage({
   );
 
 // --- RENDERIZADO DEL MODAL DE ÉXITO ---
-  if (mostrarConfirmacion) {
-    // Usamos createPortal para "sacar" el modal del Checkout 
-    // y ponerlo encima de toda la aplicación.
-    return createPortal(
-      <ModalConfirm 
-        isOpen={true}
-        data={datosVentaFinal}
-        onClose={() => {
-            // Esto llamará al onSuccess de App.jsx
-            // lo que limpiará el carrito y te mandará a "inicio"
-            onSuccess(datosVentaFinal); 
-        }}
-      />,
-      document.body // <--- EL DESTINO ES EL BODY DEL HTML
-    );
-  }
+if (mostrarConfirmacion) {
+  // Usamos el Portal para sacarlo al body y que se vea ENCIMA del otro modal
+  return createPortal(
+    <ModalRecibo 
+      isOpen={true}
+      data={datosVentaFinal}
+      onClose={() => {
+          // Esto limpia y cierra todo
+          onSuccess(datosVentaFinal); 
+      }}
+    />,
+    document.body
+  );
+}
   return (
     <div className="flex flex-col lg:flex-row min-h-full bg-white">
       
