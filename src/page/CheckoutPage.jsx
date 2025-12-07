@@ -214,7 +214,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          numero: limpiarTelefono(formData.telefono), 
+          numero: formData.telefono,
           mensaje: `Hola ${formData.nombre} 👋\n\n✅ Tu compra fue procesada con éxito.\n🎟️ Tickets: ${selectedTickets.join(", ")}\n🧾 ID de Recibo: #${ventaData.id}\n\n¡Mucha suerte! 🍀`
         }),
       }).catch(console.warn);
