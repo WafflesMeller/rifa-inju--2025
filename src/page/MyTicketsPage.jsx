@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabase';
 import { Search, Ticket, Calendar, User, AlertCircle } from 'lucide-react';
+import { CedulaInput } from '../components/FormInputs';
 
 export default function MyTicketsPage({ onBack }) {
   const [cedula, setCedula] = useState('');
@@ -10,9 +11,41 @@ export default function MyTicketsPage({ onBack }) {
   const [hasSearched, setHasSearched] = useState(false); // Para saber si ya buscó
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Convierte el valor del input (ej: "V-28184233" o "28184233" o "V28184233")
+  // al formato que está en la BD: "V28184233" o "E12345678"
+  const getDbCedula = (value) => {
+    if (!value) return '';
+
+    const str = String(value).trim();
+
+    // Si viene con guion "V-123" -> "V123"
+    if (str.includes('-')) {
+      const [tipo, num] = str.split('-');
+      return `${(tipo || '').toUpperCase().replace(/\s+/g, '')}${(num || '').replace(/\D/g, '')}`;
+    }
+
+    // Si viene como "V123456" -> normalizar mayúscula
+    if (/^[VEve]\d+$/.test(str)) {
+      return str.toUpperCase();
+    }
+
+    // Si viene solo números -> asumimos "V" por defecto (según tu conveniencia)
+    if (/^\d+$/.test(str)) {
+      return `V${str}`;
+    }
+
+    // fallback: devolver tal cual limpiando espacios
+    return str.replace(/\s+/g, '');
+  };
+
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (cedula.length < 5) {
+
+    const dbCedula = getDbCedula(cedula);
+    // extraer la parte numérica para validar longitud mínima
+    const numericPart = dbCedula.replace(/^[VE]/i, '').replace(/\D/g, '');
+
+    if (numericPart.length < 5) {
       setErrorMsg("Por favor ingresa una cédula válida.");
       return;
     }
@@ -28,7 +61,7 @@ export default function MyTicketsPage({ onBack }) {
       const { data, error } = await supabase
         .from('ventas')
         .select('*')
-        .eq('cedula', cedula) // O .ilike('cedula', `%${cedula}%`) si quieres ser flexible
+        .eq('cedula', dbCedula) // ahora buscamos en el formato exacto que hay en la BD (ej: "V28184233")
         .eq('estado', 'pagado') // Solo mostrar confirmados
         .order('created_at', { ascending: false });
 
@@ -56,35 +89,42 @@ export default function MyTicketsPage({ onBack }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-poppins">
+    // APLICAMOS EL COLOR OSCURO AL ROOT para que ocupe TODO el fondo
+    <div className="min-h-screen flex flex-col font-poppins"
+            style={{ background: 'linear-gradient(90deg,#0f172a 0%, #1e293b 50%, #312e81 100%)' }}
+            >
       
-      {/* HEADER TIPO APP */}
-      <div className="bg-slate-900 text-white px-6 py-8 pb-16 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+      {/* HEADER TIPO APP (ahora transparente sobre el fondo global) */}
+      <div className="bg-transparent text-white px-6 py-8 pb-16 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64  rounded-full blur-3xl -mr-16 -mt-16"></div>
         
         <div className="relative z-10 max-w-2xl mx-auto text-center">
           <h1 className="text-3xl font-bold mb-2">Mis Tickets 🎟️</h1>
-          <p className="text-slate-300 text-sm">Consulta tus números comprados ingresando tu cédula.</p>
+          <p className="text-indigo-200 text-sm">Consulta tus números comprados ingresando tu cédula.</p>
         </div>
       </div>
 
-      {/* CONTENIDO PRINCIPAL (Flotando sobre el header) */}
+      {/* CONTENIDO PRINCIPAL (Flotando sobre el header). 
+          Nota: mantengo -mt-10 para efecto "card" sobre el header */}
       <div className="flex-1 px-4 -mt-10 pb-10">
         <div className="max-w-2xl mx-auto">
           
-          {/* TARJETA DE BÚSQUEDA */}
+          {/* TARJETA DE BÚSQUEDA (blanca sobre fondo oscuro) */}
           <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-gray-400" />
                 </div>
-                <input
-                  type="number" // O text si usas V-
-                  placeholder="Ingresa tu Cédula (Ej: 12345678)"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+
+                {/* Usamos el CedulaInput aquí */}
+                <CedulaInput
+                  id="search-cedula"
+                  name="cedula"
+                  label="Cédula"
                   value={cedula}
                   onChange={(e) => setCedula(e.target.value)}
+                  required
                 />
               </div>
               <button
@@ -116,10 +156,10 @@ export default function MyTicketsPage({ onBack }) {
             
             {/* ESTADO VACÍO (Si buscó y no encontró) */}
             {hasSearched && !loading && compras.length === 0 && !errorMsg && (
-              <div className="text-center py-10 opacity-60">
-                <Ticket className="w-16 h-16 mx-auto text-gray-300 mb-3" />
-                <h3 className="text-lg font-bold text-gray-600">No encontramos tickets</h3>
-                <p className="text-sm text-gray-500">No hay compras registradas con la cédula {cedula}.</p>
+              <div className="text-center py-10 opacity-60 text-indigo-200">
+                <Ticket className="w-16 h-16 mx-auto text-indigo-200 mb-3" />
+                <h3 className="text-lg font-bold text-indigo-100">No encontramos tickets</h3>
+                <p className="text-sm text-indigo-200">No hay compras registradas con la cédula {getDbCedula(cedula) || cedula}.</p>
               </div>
             )}
 
@@ -158,7 +198,7 @@ export default function MyTicketsPage({ onBack }) {
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {compra.tickets_seleccionados && compra.tickets_seleccionados.map((num) => (
-                        <span key={num} className="bg-indigo-600 text-white text-lg font-bold px-4 py-2 rounded-lg shadow-sm font-mono border-b-4 border-indigo-800 active:translate-y-0.5">
+                        <span key={num} className="bg-indigo-600 text-white text-lg font-bold px-4 py-2 rounded-lg shadow-sm  border-b-4 border-indigo-800 active:translate-y-0.5">
                           {num}
                         </span>
                       ))}
