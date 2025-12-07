@@ -95,35 +95,37 @@ export default function CheckoutPage({
     setLoading(true);
 
     try {
-      // 1. Validar referencia (Simulación de tu lógica existente)
-        // A. Calcular la fecha límite (Ahora - 48 horas)
+ // 1. Calcular fecha límite (48h)
       const fechaLimite = new Date();
       fechaLimite.setHours(fechaLimite.getHours() - 48);
-          // Convertimos a formato ISO para que Supabase lo entienda
-      const fechaISO = fechaLimite.toISOString(); 
+      const fechaISO = fechaLimite.toISOString();
 
-        // B. Validar referencia con filtro de tiempo
+      // B. Buscar el pago (SIN filtrar por 'usada' todavía)
       const { data: pagoData, error: pagoError } = await supabase
         .from("historial_pagos")
-        .select("id")
-        .like("referencia", `%${formData.referencia}`) // Últimos 4 dígitos
-        .eq("monto_numerico", montoEnBs)             // Monto exacto
-        .eq("usada", false)                          // Que no esté usada
-        
-          // 👇👇 FILTRO NUEVO DE 48 HORAS 👇👇
-        .gte("created_at", fechaISO)                 
-          // 👆 Significa: "Trae pagos creados DESPUÉS de hace 48h"
-        
-        .order('created_at', { ascending: true })    // Si hay duplicados recientes, toma el más viejo de ellos
+        .select("id, usada") // <--- IMPORTANTE: Traemos la columna 'usada' para ver su estado
+        .like("referencia", `%${formData.referencia}`)
+        .eq("monto_numerico", montoEnBs)
+        .gte("created_at", fechaISO) // Solo últimos 2 días
+        .order('created_at', { ascending: true }) // El más antiguo primero
         .limit(1);
 
       if (pagoError) throw pagoError;
 
+      // 1️.1 VALIDACIÓN: ¿Existe el pago?
       if (!pagoData || pagoData.length === 0) {
-        throw new Error("No se encontró un pago reciente (48h) con esa referencia y monto.");
+        throw new Error("Pago no encontrado. Verifica los últimos 4 dígitos y que el monto sea exacto (últimas 48h).");
       }
-      
-      const pagoId = pagoData[0].id;
+
+      const pagoEncontrado = pagoData[0];
+
+      // 1.2️ VALIDACIÓN: ¿Ya fue usado?
+      if (pagoEncontrado.usada === true) {
+        throw new Error("⚠️ Esta referencia ya fue reportada y procesada anteriormente.");
+      }
+
+      // Si pasamos aquí, el pago existe y está libre (usada === false)
+      const pagoId = pagoEncontrado.id;
 
       // 2. Crear Venta
       const { data: ventaData, error: ventaError } = await supabase
