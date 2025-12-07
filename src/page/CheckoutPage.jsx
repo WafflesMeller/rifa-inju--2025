@@ -1,5 +1,6 @@
 // src/page/CheckoutPage.jsx
 import React, { useState, useEffect, useRef } from "react";
+import { supabase } from "../supabaseClient";
 import { 
   ArrowLeft, 
   Copy, 
