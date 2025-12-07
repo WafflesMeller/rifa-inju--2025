@@ -2,7 +2,6 @@
 import React from "react";
 
 const TicketNumber = ({ number, status, onSelect }) => {
-  // Aseguramos formato 000 visualmente
   const formattedNumber = number.toString().padStart(3, "0");
 
   let baseClasses =
@@ -10,15 +9,18 @@ const TicketNumber = ({ number, status, onSelect }) => {
   let statusClasses = "";
 
   if (status === "sold" || status === "vendido") {
-    // 🟠 CAMBIO AQUÍ: Naranja opaco
+    // 🟠 CAMBIO AQUÍ: Estilo solicitado
+    // bg-gray-50: Fondo gris casi blanco
+    // text-orange-500: Letra naranja
+    // border-orange-400: Borde naranja delgado
     statusClasses =
-      "bg-orange-200 text-orange-500 border-orange-200 cursor-not-allowed opacity-75"; 
+      "bg-gray-50 text-orange-500 border-orange-400 cursor-not-allowed"; 
   } else if (status === "selected") {
-    // 🟣 Seleccionado (Indigo brillante)
+    // 🟣 Seleccionado
     statusClasses =
       "bg-indigo-600 text-white border-indigo-600 shadow-lg transform scale-110 z-10";
   } else {
-    // ⚪ Disponible (Blanco)
+    // ⚪ Disponible
     statusClasses =
       "bg-white text-gray-700 border-gray-200 hover:border-indigo-400 hover:text-indigo-600";
   }
