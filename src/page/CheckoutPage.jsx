@@ -77,74 +77,85 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
     }
   };
 
-  // --- Lógica de Envío ---
+// --- Lógica de Envío BLINDADA ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg('');
+    setErrorMsg("");
+    
+    // Variables de control para Rollback (Deshacer cambios si falla)
+    let ventaIdCreada = null;
+    let pagoIdUsado = null;
 
     if (loadingTasa) return;
+    
+    // Validación de campos vacíos
     if (!formData.nombre || !formData.telefono || !formData.referencia) {
-      setErrorMsg('Por favor completa los campos obligatorios.');
+      setErrorMsg("Por favor completa los campos obligatorios.");
       return;
+    }
+
+    // 🛡️ SEGURIDAD 1: VERIFICACIÓN MATEMÁTICA
+    // Calculamos cuánto debería costar (Precio x Cantidad x Tasa)
+    const PRECIO_BASE = 3; // 3$ (Asegúrate que coincida con tu constante TICKET_PRICE)
+    const montoEsperado = selectedTickets.length * PRECIO_BASE * tasaBCV;
+    
+    // Damos un margen de 1 Bolívar por redondeos
+    if (Math.abs(montoEsperado - montoEnBs) > 1.0) {
+        setErrorMsg("⚠️ Error de seguridad: El monto no coincide con la cantidad de tickets.");
+        return;
     }
 
     setLoading(true);
 
     try {
-      // 1. Calcular fecha límite (48h)
+      // Calcular fecha límite (48h atrás)
       const fechaLimite = new Date();
       fechaLimite.setHours(fechaLimite.getHours() - 48);
       const fechaISO = fechaLimite.toISOString();
 
-      // B. Buscar el pago (SIN filtrar por 'usada' todavía)
+      // 1. BUSCAR Y VALIDAR EL PAGO
       const { data: pagoData, error: pagoError } = await supabase
-        .from('historial_pagos')
-        .select('id, usada') // <--- IMPORTANTE: Traemos la columna 'usada' para ver su estado
-        .like('referencia', `%${formData.referencia}`)
-        .eq('monto_numerico', montoEnBs)
-        .gte('created_at', fechaISO) // Solo últimos 2 días
-        .order('created_at', { ascending: true }) // El más antiguo primero
+        .from("historial_pagos")
+        .select("id, usada")
+        .like("referencia", `%${formData.referencia}`)
+        .eq("monto_numerico", montoEnBs)
+        .gte("created_at", fechaISO)
+        .order('created_at', { ascending: true })
         .limit(1);
 
       if (pagoError) throw pagoError;
 
-      // 1️.1 VALIDACIÓN: ¿Existe el pago?
       if (!pagoData || pagoData.length === 0) {
-        throw new Error('Pago no encontrado. Verifica los últimos 4 dígitos y que el monto sea exacto (últimas 48h).');
+        throw new Error("Pago no encontrado. Verifica los últimos 4 dígitos y el monto exacto.");
       }
 
       const pagoEncontrado = pagoData[0];
 
-      // 1.2️ VALIDACIÓN: ¿Ya fue usado?
       if (pagoEncontrado.usada === true) {
-        throw new Error('⚠️ Esta referencia ya fue reportada y procesada anteriormente.');
+        throw new Error("⚠️ Esta referencia ya fue reportada y procesada anteriormente.");
       }
 
-      // Si pasamos aquí, el pago existe y está libre (usada === false)
-      const pagoId = pagoEncontrado.id;
+      pagoIdUsado = pagoEncontrado.id; // Guardamos ID para posible rollback
 
-      // 1.5 VERIFICACIÓN FINAL DE DISPONIBILIDAD Antes de crear la venta, revisamos por última vez si alguien nos ganó
+      // 1.5. VERIFICACIÓN FINAL DE DISPONIBILIDAD (Anti-Colisión)
       const { data: ocupadosData, error: ocupadosError } = await supabase
         .from('tickets_vendidos')
         .select('numero')
-        .in('numero', selectedTickets); // Buscamos si nuestros tickets ya existen
+        .in('numero', selectedTickets);
 
       if (ocupadosError) throw ocupadosError;
 
       if (ocupadosData && ocupadosData.length > 0) {
-        const ticketsPerdidos = ocupadosData.map((t) => t.numero).join(', ');
-        throw new Error(
-          `⛔ ¡Lo sentimos! El ticket ${ticketsPerdidos} acaba de ser vendido a otra persona hace un momento.`
-        );
+         const ticketsPerdidos = ocupadosData.map(t => t.numero).join(', ');
+         throw new Error(`⛔ ¡Lo sentimos! El ticket ${ticketsPerdidos} acaba de ser ganado por otra persona.`);
       }
-      // =====================================================================
 
-      // 2. Crear Venta
+      // 2. CREAR LA VENTA
       const { data: ventaData, error: ventaError } = await supabase
-        .from('ventas')
+        .from("ventas")
         .insert({
-          nombre_cliente: formData.nombre,
-          telefono: formData.telefono,
+          nombre_cliente: formData.nombre.trim().toUpperCase(), // Mayúsculas
+          telefono: formData.telefono,         // Teléfono limpio (58...)
           cedula: formData.cedula,
           direccion: formData.direccion,
           telefono_familiar: formData.telefonoFamiliar,
@@ -153,70 +164,86 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
           tasa_bcv: tasaBCV,
           monto_bs: montoEnBs,
           referencia_pago: formData.referencia,
-          estado: 'pagado',
+          estado: "pagado",
         })
-        .select('id')
+        .select("id")
         .single();
 
       if (ventaError) throw ventaError;
+      
+      ventaIdCreada = ventaData.id; // Guardamos ID para posible rollback
 
-      // 3. ACTUALIZAR EL PAGO
+      // 3. ACTUALIZAR EL PAGO (Marcar usado)
       const { data: datosActualizados, error: updateError } = await supabase
-        .from('historial_pagos')
-        .update({
-          usada: true,
-          venta_id: ventaData.id,
-        })
-        .eq('id', pagoId)
-        .select(); // <--- IMPORTANTE: Esto nos devuelve la fila si se logró tocar
+        .from("historial_pagos")
+        .update({ 
+            usada: true, 
+            venta_id: ventaData.id 
+        }) 
+        .eq("id", pagoIdUsado)
+        .select();
 
-      if (updateError) {
-        throw new Error('Error técnico al actualizar: ' + updateError.message);
-      }
+      if (updateError) throw new Error("Error técnico al actualizar pago: " + updateError.message);
 
-      // 🔍 AQUÍ ESTÁ EL DIAGNÓSTICO
       if (!datosActualizados || datosActualizados.length === 0) {
-        console.error('⛔ ALERTA: La operación update corrió, pero Supabase no modificó ninguna fila.');
-        console.error('Causa probable: Políticas RLS bloqueando el UPDATE.');
-        throw new Error('El sistema de seguridad bloqueó la actualización del pago.');
+          throw new Error("El sistema de seguridad bloqueó la actualización del pago. Por favor revise su conexión a internet.");
       }
-
-      // PASO 4 NUEVO: Registrar tickets individuales
-
-      // Preparamos el array de objetos para insertar todo de una vez
+      
+      // 4. REGISTRAR TICKETS INDIVIDUALES
       const ticketsParaInsertar = selectedTickets.map((numero) => ({
-        numero: numero, // Columna 'numero' en tu tabla tickets_vendidos
-        cedula_comprador: formData.cedula, // La cédula que pediste
-        venta_id: ventaData.id, // IMPORTANTE: Vinculamos al ID de la venta principal
+        numero: numero,
+        // 🛡️ CORRECCIÓN CRÍTICA: Convertimos cédula a NÚMERO (BigInt)
+        cedula_comprador: parseInt(formData.cedula.replace(/\D/g, '')), 
+        venta_id: ventaData.id
       }));
 
-      const { error: ticketsError } = await supabase.from('tickets_vendidos').insert(ticketsParaInsertar);
+      const { error: ticketsError } = await supabase
+        .from("tickets_vendidos")
+        .insert(ticketsParaInsertar);
 
       if (ticketsError) {
-        // Si falla esto, es crítico (tendrías una venta sin tickets reservados)
-        throw new Error('Error reservando los números individuales: ' + ticketsError.message);
+         // Si es error de duplicado (código 23505), personalizamos el mensaje
+         if (ticketsError.code === '23505') { 
+             throw new Error("Error crítico: Uno de los tickets ya fue vendido.");
+         }
+         throw new Error("Error reservando tickets: " + ticketsError.message);
       }
 
-      // 5. Bot (Fire and forget)
-      fetch(BOT_API_URL + '/enviar-mensaje', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          numero: formData.telefono,
-          mensaje: `Hola ${
-            formData.nombre
-          } 👋\n\n✅ Tu compra fue procesada con éxito.\n🎟️ Tickets: ${selectedTickets.join(', ')}\n🧾 ID de Recibo: #${
-            ventaData.id
-          }\n\n¡Mucha suerte! 🍀`,
+      // 5. ENVIAR WHATSAPP
+      fetch(BOT_API_URL + "/enviar-mensaje", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          numero: limpiarTelefono(formData.telefono), 
+          mensaje: `Hola ${formData.nombre} 👋\n\n✅ Tu compra fue procesada con éxito.\n🎟️ Tickets: ${selectedTickets.join(", ")}\n🧾 ID de Recibo: #${ventaData.id}\n\n¡Mucha suerte! 🍀`
         }),
       }).catch(console.warn);
 
+      // Finalizar con éxito
       const datosFinales = { ...ventaData, tickets: selectedTickets };
       setDatosVentaFinal(datosFinales);
       setMostrarConfirmacion(true);
+
     } catch (err) {
       console.error(err);
-      setErrorMsg(err.message || 'Error al procesar el pago.');
+      
+      // 🚨 ZONA DE ROLLBACK (DESHACER CAMBIOS) 🚨
+      // Si llegamos aquí, significa que algo falló a mitad de camino.
+      
+      if (ventaIdCreada) {
+          console.log("🔄 Rollback: Eliminando venta incompleta...");
+          await supabase.from('ventas').delete().eq('id', ventaIdCreada);
+      }
+      
+      if (pagoIdUsado) {
+          console.log("🔄 Rollback: Liberando pago...");
+          // Liberamos el pago para que el usuario pueda intentar de nuevo
+          await supabase.from('historial_pagos')
+            .update({ usada: false, venta_id: null })
+            .eq('id', pagoIdUsado);
+      }
+
+      setErrorMsg(err.message || "Error al procesar el pago. Por favor revise su conexión a internet e intentelo nuevamente.");
     } finally {
       setLoading(false);
     }
