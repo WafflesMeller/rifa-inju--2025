@@ -1,58 +1,109 @@
 // src/components/ModalRecibo.jsx
-import React from 'react';
-import { Check } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { TicketCheck, MessageCircle } from 'lucide-react';
+// Hook de partycles (misma forma que en tu PaymentSuccessModal)
+import { useReward } from 'partycles';
 
 export default function ModalRecibo({ isOpen, data, onClose }) {
-  if (!isOpen || !data) return null;
+  const [showModal, setShowModal] = useState(false);
+  const [animate, setAnimate] = useState(false);
+  const [fired, setFired] = useState(false);
+
+  // Usamos el mismo ID que en el modal que nos funciona: "successId"
+  const { reward } = useReward('successId', 'confetti', {
+    particleCount: 168,
+    spread: 360,
+    startVelocity: 21,
+    elementSize: 14,
+    lifetime: 168,
+    physics: {
+      gravity: 0.35,
+      wind: 0,
+      friction: 0.98
+    },
+    colors: [
+      "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3"
+    ]
+  });
+
+  useEffect(() => {
+    if (isOpen && data) {
+      setShowModal(true);
+
+      const timer = setTimeout(() => {
+        setAnimate(true);
+
+        // solo disparamos una vez por apertura (control simple con state)
+        if (!fired) {
+          setTimeout(() => {
+            try {
+              reward();
+            } catch (err) {
+              // no rompemos si falla partycles
+              // console.warn('partycles error', err);
+            }
+          }, 200); // sincronizado con el "pop"
+          setFired(true);
+        }
+      }, 10);
+
+      return () => clearTimeout(timer);
+    } else {
+      setAnimate(false);
+      // resetear fired para la próxima apertura
+      setFired(false);
+      const timer = setTimeout(() => setShowModal(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, data, reward, fired]);
+
+  if (!showModal || !data) return null;
 
   return (
-    // Z-INDEX 99999 para estar ENCIMA de todo (incluso del otro modal)
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-      
-      {/* Fondo oscuro */}
-      <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
-        onClick={onClose}
-      />
+    <div
+      className={`
+        fixed inset-0 z-110 flex items-center justify-center
+        bg-neutral-900/50 backdrop-blur-sm
+        transition-opacity duration-300 ease-out
+        ${animate ? 'opacity-100' : 'opacity-0'}
+      `}
+    >
+      <div
+        className={`
+          bg-[#1a1a1a] rounded-[2.5rem] p-6 w-full max-w-sm shadow-2xl border border-white/5
+          transform transition-all duration-300 ease-out
+          ${animate ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'}
+        `}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col items-center text-center gap-4">
+          {/* Icono Grande de Ticket + ANCLA "successId" (igual que en tu modal que funciona) */}
+          <div className="relative w-24 h-24 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mb-2 ring-1 ring-green-500/20">
+            <TicketCheck size={48} strokeWidth={2.5} />
 
-      {/* Tarjeta del Recibo */}
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        
-        {/* Encabezado Verde */}
-        <div className="bg-emerald-600 p-6 text-center text-white">
-           <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-lg">
-             <Check className="w-8 h-8 text-emerald-600" strokeWidth={3} />
-           </div>
-           <h2 className="text-2xl font-bold">¡Pago Confirmado!</h2>
-           <p className="text-emerald-100 text-sm">Tu ID de recibo: #{data.id}</p>
-        </div>
+            {/* ANCLA: partycles buscará "successId" dentro del DOM (igual que tu modal) */}
+            <div id="successId" className="absolute top-1/2 left-1/2 w-1 h-1" />
+          </div>
 
-        {/* Cuerpo del Recibo */}
-        <div className="p-6 space-y-4">
-          <div className="text-center border-b border-gray-100 pb-4">
-            <p className="text-xs text-gray-400 uppercase tracking-wider">Monto Total</p>
-            <p className="text-3xl font-black text-slate-800">
-              {data.monto_bs ? `Bs. ${data.monto_bs}` : 'Pagado'}
+          <div>
+            <h3 className="text-2xl font-bold text-white">¡Pago Exitoso!</h3>
+            <p className="text-sm text-gray-400 mt-3 leading-relaxed">
+              Hemos procesado tu solicitud correctamente. <br />
+              Los detalles de tu compra llegarán a tu
+              <span className="text-green-400 font-semibold inline-flex items-center gap-1 ml-1">
+                WhatsApp <MessageCircle size={14} />
+              </span>.
             </p>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-xl space-y-2">
-             <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Cliente:</span>
-                <span className="font-bold">{data.nombre_cliente}</span>
-             </div>
-             <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Tickets:</span>
-                <span className="font-bold text-indigo-600">{data.tickets.join(", ")}</span>
-             </div>
+          <div className="w-full mt-4">
+            <button
+              onClick={onClose}
+              className="w-full py-3.5 rounded-full bg-green-600 hover:bg-green-500 text-white font-bold transition-all shadow-lg shadow-green-900/20 active:scale-95 cursor-pointer"
+            >
+              Cerrar
+            </button>
           </div>
-
-          <button 
-            onClick={onClose}
-            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl shadow-lg transition-transform active:scale-95"
-          >
-            Finalizar
-          </button>
         </div>
       </div>
     </div>

@@ -1,3 +1,4 @@
+// src/components/ModalConfirm.jsx
 import React, { Fragment } from 'react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { X } from 'lucide-react';
@@ -13,8 +14,10 @@ export default function ModalConfirm({
 }) {
   return (
     <Transition show={Boolean(isOpen)} as={Fragment}>
-      {/* CORRECCIÓN: z-1000 no existe. Usamos z-[999] o relative z-50 */}
-      <Dialog as="div" className="relative z-[999]" onClose={onClose}>
+      {/* 🔴 ERROR ANTERIOR: z-100 (No existe en Tailwind por defecto) 
+         🟢 CORRECCIÓN: z-[100] (Uso de corchetes para valor personalizado) 
+      */}
+      <Dialog as="div" className="relative z-100" onClose={onClose}>
         
         {/* Backdrop (Fondo oscuro) */}
         <TransitionChild
@@ -26,13 +29,14 @@ export default function ModalConfirm({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          {/* CORRECCIÓN: Aseguramos que el fondo cubra todo */}
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
         </TransitionChild>
 
-        {/* Container principal para centrar */}
-        {/* CORRECCIÓN: z-[1000] para estar encima de todo (Navbar, FloatingBar, etc) */}
-        <div className="fixed inset-0 z-[1000] w-screen overflow-y-auto">
+        {/* Container principal */}
+        {/* 🔴 ERROR ANTERIOR: z-100 
+           🟢 CORRECCIÓN: z-[100] (Asegura que esté encima de la barra flotante que es z-40) 
+        */}
+        <div className="fixed inset-0 z-100 w-screen overflow-y-auto">
           <div className="flex min-h-full items-end justify-center p-0 text-center sm:items-center sm:p-4">
             
             <TransitionChild
@@ -51,7 +55,7 @@ export default function ModalConfirm({
                   w-full max-w-5xl
                   
                   /* Altura y Bordes */
-                  h-[100dvh]               /* Móvil: Pantalla completa (dvh evita problemas con barra de safari) */
+                  h-[100dvh]               /* Móvil: Pantalla completa */
                   sm:h-auto sm:max-h-[90vh] 
                   rounded-none sm:rounded-2xl
                   
@@ -94,9 +98,10 @@ export default function ModalConfirm({
                           if (typeof onClear === 'function') onClear();
                         } catch (e) { console.error(e) }
                         
+                        // 1. Cerramos el modal
                         onClose();
                         
-                        // Retraso para transición suave
+                        // 2. Avisamos al padre (con timeout para que la animación se vea bien)
                         setTimeout(() => {
                           onPaymentSuccess(result);
                         }, 300);

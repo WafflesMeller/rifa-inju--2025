@@ -21,7 +21,6 @@ const BOT_API_URL = "https://whatsapp-server-rifa.onrender.com";
 export default function CheckoutPage({
   selectedTickets = [],
   totalAmount = 0,
-  onBack = () => {},
   onSuccess = () => {},
 }) {
   const [tasaBCV, setTasaBCV] = useState(0);
