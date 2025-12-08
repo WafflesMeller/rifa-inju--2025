@@ -56,7 +56,7 @@ export default function ModalConfirm({
                   
                   /* Altura y Bordes */
                   h-[100dvh]               /* Móvil: Pantalla completa */
-                  sm:h-auto sm:max-h-[90vh] 
+                  sm:h-auto sm:max-h-[95vh] 
                   rounded-none sm:rounded-2xl
                   
                   flex flex-col

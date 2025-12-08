@@ -111,7 +111,7 @@ const Navbar = ({
                         }`}
                       >
                         <Sparkles className="w-4 h-4 text-purple-500" />
-                        <span className="hidden md:inline">IA Mística</span>
+                        <span>IA Mística</span>
                       </button>
                     )
                   )}

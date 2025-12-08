@@ -38,7 +38,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         const res = await fetch('/api/tasa');
         if (!res.ok) throw new Error('Err');
         const data = await res.json();
-        const precioOficial = data?.current?.eur
+        const precioOficial = data?.current?.eur;
         if (mounted) setTasaBCV(precioOficial);
       } catch (err) {
         console.error(err);
@@ -80,14 +80,14 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
   // --- NUEVA FUNCIÓN: Abrir Link Universal BDV ---
   const abrirLinkBDV = () => {
     // 1. Datos Fijos (Tus datos)
-    const RECEPTOR_ID = "V26597356";
-    const RECEPTOR_TLF = "584242929579";
-    const RECEPTOR_BANCO = "0102";
+    const RECEPTOR_ID = 'V26597356';
+    const RECEPTOR_TLF = '584242929579';
+    const RECEPTOR_BANCO = '0102';
 
     // 2. Datos Dinámicos (Monto y Descripción)
     const montoFormateado = montoEnBs.toFixed(2);
     // Descripción simple para evitar errores
-    const descripcion = "9dxBliWt4XnVSB0LTqNasQ%3D%3D";
+    const descripcion = '9dxBliWt4XnVSB0LTqNasQ%3D%3D';
 
     // 3. Construir el Link Universal
     const linkBDV = `https://bdvdigital.banvenez.com/pagomovil?id=${RECEPTOR_ID}&phone=${RECEPTOR_TLF}&bank=${RECEPTOR_BANCO}&description=${descripcion}&amount=${montoFormateado}`;
@@ -96,20 +96,20 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
     window.open(linkBDV, '_blank');
   };
 
-// --- Lógica de Envío BLINDADA ---
+  // --- Lógica de Envío BLINDADA ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg("");
-    
+    setErrorMsg('');
+
     // Variables de control para Rollback (Deshacer cambios si falla)
     let ventaIdCreada = null;
     let pagoIdUsado = null;
 
     if (loadingTasa) return;
-    
+
     // Validación de campos vacíos
     if (!formData.nombre || !formData.telefono || !formData.referencia) {
-      setErrorMsg("Por favor completa los campos obligatorios.");
+      setErrorMsg('Por favor completa los campos obligatorios.');
       return;
     }
 
@@ -117,11 +117,11 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
     // Calculamos cuánto debería costar (Precio x Cantidad x Tasa)
     const PRECIO_BASE = 3; // 3$ (Asegúrate que coincida con tu constante TICKET_PRICE)
     const montoEsperado = selectedTickets.length * PRECIO_BASE * tasaBCV;
-    
+
     // Damos un margen de 1 Bolívar por redondeos
     if (Math.abs(montoEsperado - montoEnBs) > 1.0) {
-        setErrorMsg("⚠️ Error de seguridad: El monto no coincide con la cantidad de tickets.");
-        return;
+      setErrorMsg('⚠️ Error de seguridad: El monto no coincide con la cantidad de tickets.');
+      return;
     }
 
     setLoading(true);
@@ -134,24 +134,24 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
 
       // 1. BUSCAR Y VALIDAR EL PAGO
       const { data: pagoData, error: pagoError } = await supabase
-        .from("historial_pagos")
-        .select("id, usada")
-        .like("referencia", `%${formData.referencia}`)
-        .eq("monto_numerico", montoEnBs)
-        .gte("created_at", fechaISO)
+        .from('historial_pagos')
+        .select('id, usada')
+        .like('referencia', `%${formData.referencia}`)
+        .eq('monto_numerico', montoEnBs)
+        .gte('created_at', fechaISO)
         .order('created_at', { ascending: true })
         .limit(1);
 
       if (pagoError) throw pagoError;
 
       if (!pagoData || pagoData.length === 0) {
-        throw new Error("Pago no encontrado. Verifica los últimos 4 dígitos y el monto exacto.");
+        throw new Error('Pago no encontrado. Verifica los últimos 4 dígitos y el monto exacto.');
       }
 
       const pagoEncontrado = pagoData[0];
 
       if (pagoEncontrado.usada === true) {
-        throw new Error("⚠️ Esta referencia ya fue reportada y procesada anteriormente.");
+        throw new Error('⚠️ Esta referencia ya fue reportada y procesada anteriormente.');
       }
 
       pagoIdUsado = pagoEncontrado.id; // Guardamos ID para posible rollback
@@ -165,16 +165,16 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       if (ocupadosError) throw ocupadosError;
 
       if (ocupadosData && ocupadosData.length > 0) {
-         const ticketsPerdidos = ocupadosData.map(t => t.numero).join(', ');
-         throw new Error(`⛔ ¡Lo sentimos! El ticket ${ticketsPerdidos} acaba de ser ganado por otra persona.`);
+        const ticketsPerdidos = ocupadosData.map((t) => t.numero).join(', ');
+        throw new Error(`⛔ ¡Lo sentimos! El ticket ${ticketsPerdidos} acaba de ser ganado por otra persona.`);
       }
 
       // 2. CREAR LA VENTA
       const { data: ventaData, error: ventaError } = await supabase
-        .from("ventas")
+        .from('ventas')
         .insert({
           nombre_cliente: formData.nombre.trim().toUpperCase(), // Mayúsculas
-          telefono: formData.telefono,         // Teléfono limpio (58...)
+          telefono: formData.telefono, // Teléfono limpio (58...)
           cedula: formData.cedula,
           direccion: formData.direccion,
           telefono_familiar: formData.telefonoFamiliar,
@@ -183,58 +183,62 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
           tasa_bcv: tasaBCV,
           monto_bs: montoEnBs,
           referencia_pago: formData.referencia,
-          estado: "pagado",
+          estado: 'pagado',
         })
-        .select("id")
+        .select('id')
         .single();
 
       if (ventaError) throw ventaError;
-      
+
       ventaIdCreada = ventaData.id; // Guardamos ID para posible rollback
 
       // 3. ACTUALIZAR EL PAGO (Marcar usado)
       const { data: datosActualizados, error: updateError } = await supabase
-        .from("historial_pagos")
-        .update({ 
-            usada: true, 
-            venta_id: ventaData.id 
-        }) 
-        .eq("id", pagoIdUsado)
+        .from('historial_pagos')
+        .update({
+          usada: true,
+          venta_id: ventaData.id,
+        })
+        .eq('id', pagoIdUsado)
         .select();
 
-      if (updateError) throw new Error("Error técnico al actualizar pago: " + updateError.message);
+      if (updateError) throw new Error('Error técnico al actualizar pago: ' + updateError.message);
 
       if (!datosActualizados || datosActualizados.length === 0) {
-          throw new Error("El sistema de seguridad bloqueó la actualización del pago. Por favor revise su conexión a internet.");
+        throw new Error(
+          'El sistema de seguridad bloqueó la actualización del pago. Por favor revise su conexión a internet.'
+        );
       }
-      
+
       // 4. REGISTRAR TICKETS INDIVIDUALES
       const ticketsParaInsertar = selectedTickets.map((numero) => ({
         numero: numero,
         // 🛡️ CORRECCIÓN CRÍTICA: Convertimos cédula a NÚMERO (BigInt)
-        cedula_comprador: parseInt(formData.cedula.replace(/\D/g, '')), 
-        venta_id: ventaData.id
+        cedula_comprador: parseInt(formData.cedula.replace(/\D/g, '')),
+        venta_id: ventaData.id,
       }));
 
-      const { error: ticketsError } = await supabase
-        .from("tickets_vendidos")
-        .insert(ticketsParaInsertar);
+      const { error: ticketsError } = await supabase.from('tickets_vendidos').insert(ticketsParaInsertar);
 
       if (ticketsError) {
-         // Si es error de duplicado (código 23505), personalizamos el mensaje
-         if (ticketsError.code === '23505') { 
-             throw new Error("Error crítico: Uno de los tickets ya fue vendido.");
-         }
-         throw new Error("Error reservando tickets: " + ticketsError.message);
+        // Si es error de duplicado (código 23505), personalizamos el mensaje
+        if (ticketsError.code === '23505') {
+          throw new Error('Error crítico: Uno de los tickets ya fue vendido.');
+        }
+        throw new Error('Error reservando tickets: ' + ticketsError.message);
       }
 
       // 5. ENVIAR WHATSAPP
-      fetch(BOT_API_URL + "/enviar-mensaje", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+      fetch(BOT_API_URL + '/enviar-mensaje', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           numero: formData.telefono,
-          mensaje: `Hola ${formData.nombre} 👋\n\n✅ Tu compra fue procesada con éxito.\n🎟️ Tickets: ${selectedTickets.join(", ")}\n🧾 ID de Recibo: #${ventaData.id}\n\n¡Mucha suerte! 🍀`
+          mensaje: `Hola ${
+            formData.nombre
+          } 👋\n\n✅ Tu compra fue procesada con éxito.\n🎟️ Tickets: ${selectedTickets.join(', ')}\n🧾 ID de Recibo: #${
+            ventaData.id
+          }\n\n¡Mucha suerte! 🍀`,
         }),
       }).catch(console.warn);
 
@@ -242,27 +246,26 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       const datosFinales = { ...ventaData, tickets: selectedTickets };
       setDatosVentaFinal(datosFinales);
       setMostrarConfirmacion(true);
-
     } catch (err) {
       console.error(err);
-      
+
       // 🚨 ZONA DE ROLLBACK (DESHACER CAMBIOS) 🚨
       // Si llegamos aquí, significa que algo falló a mitad de camino.
-      
+
       if (ventaIdCreada) {
-          console.log("🔄 Rollback: Eliminando venta incompleta...");
-          await supabase.from('ventas').delete().eq('id', ventaIdCreada);
-      }
-      
-      if (pagoIdUsado) {
-          console.log("🔄 Rollback: Liberando pago...");
-          // Liberamos el pago para que el usuario pueda intentar de nuevo
-          await supabase.from('historial_pagos')
-            .update({ usada: false, venta_id: null })
-            .eq('id', pagoIdUsado);
+        console.log('🔄 Rollback: Eliminando venta incompleta...');
+        await supabase.from('ventas').delete().eq('id', ventaIdCreada);
       }
 
-      setErrorMsg(err.message || "Error al procesar el pago. Por favor revise su conexión a internet e intentelo nuevamente.");
+      if (pagoIdUsado) {
+        console.log('🔄 Rollback: Liberando pago...');
+        // Liberamos el pago para que el usuario pueda intentar de nuevo
+        await supabase.from('historial_pagos').update({ usada: false, venta_id: null }).eq('id', pagoIdUsado);
+      }
+
+      setErrorMsg(
+        err.message || 'Error al procesar el pago. Por favor revise su conexión a internet e intentelo nuevamente.'
+      );
     } finally {
       setLoading(false);
     }
@@ -290,12 +293,12 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       {/* SECCIÓN IZQUIERDA (Desktop) / SUPERIOR (Mobile):     */}
       {/* Resumen de Compra y Datos Bancarios                  */}
       {/* ---------------------------------------------------- */}
-      <div className="w-full lg:w-5/12 bg-slate-50 border-b lg:border-b-0 lg:border-r border-gray-200 p-6 lg:p-8 order-1 lg:order-1">
-        <h2 className="text-xl font-bold text-slate-800 mb-1">Resumen del Pedido</h2>
-        <p className="text-sm text-slate-500 mb-6">Revisa los detalles antes de pagar.</p>
+      <div className="w-full lg:w-5/12 bg-slate-50 border-b lg:border-b-0 lg:border-r border-gray-200 p-3 lg:p-4 order-1 lg:order-1">
+        <h2 className="text-xl font-bold text-slate-800">Resumen del Pedido</h2>
+        <p className="text-sm text-slate-500 mb-3">Revisa los detalles antes de pagar.</p>
 
         {/* Tarjeta de Tickets */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-3">
           <div className="flex justify-between items-start mb-2">
             <span className="text-sm font-medium text-gray-600">Tickets Seleccionados</span>
             <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-bold">
@@ -345,22 +348,26 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
 
           <button
             onClick={copyPaymentDetails}
-            className="mt-4 w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white rounded-lg py-2 px-4 text-sm font-medium transition flex items-center justify-center gap-2"
+            className="mt-4 w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white rounded-lg py-2 px-4 text-sm font-medium transition flex items-center justify-center gap-2 hover:scale-105 "
           >
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             {copied ? '¡Datos Copiados!' : 'Copiar Datos Bancarios'}
           </button>
+        </div>
 
-          <button 
+        <div className="mt-4 flex flex-col gap-2">
+          <button
             type="button"
             onClick={abrirLinkBDV}
-            className="mt-3 w-full bg-white text-emerald-800 font-bold py-3 px-4 rounded-lg shadow-lg border-2 border-emerald-500/30 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 active:scale-95"
+            className="group w-full bg-white font-medium py-2.5 px-4 rounded-xl border border-gray-300 hover:scale-102 text-gray-800 transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
           >
-            {/* Icono de Smartphone/App */}
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-emerald-700">
-              <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/>
-            </svg>
-            Abrir App BDV (Monto Listo)
+            {/* Logo sin fondo ni borde extra, estilo minimalista */}
+            <img
+              src="/bdv-logo.png"
+              alt="BDV"
+              className="w-5 h-5 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+            />
+            <span className="text-sm">Pagar con BDV</span>
           </button>
         </div>
       </div>
@@ -369,8 +376,8 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       {/* SECCIÓN DERECHA (Desktop) / INFERIOR (Mobile):       */}
       {/* Formulario de Usuario                                */}
       {/* ---------------------------------------------------- */}
-      <div className="w-full lg:w-7/12 p-6 lg:p-8 bg-white order-2 lg:order-2">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Validación del Pago</h2>
+      <div className="w-full lg:w-7/12 p-3 lg:p-4 bg-white order-2 lg:order-2">
+        <h2 className="text-xl font-bold text-gray-900 mb-3">Validación del Pago</h2>
 
         {errorMsg && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md animate-in fade-in slide-in-from-top-2">
@@ -378,9 +385,9 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Fila 1 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {/* 👇 USAS CedulaInput */}
             <CedulaInput label="Cédula" name="cedula" value={formData.cedula} onChange={handleChange} required />
             {/* 👇 USAS TextInput */}
@@ -396,7 +403,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
           </div>
 
           {/* Fila 2 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {/* 👇 USAS PhoneInput */}
             <PhoneInput
               label="Teléfono WhatsApp"
@@ -423,7 +430,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
             onChange={handleChange}
           />
 
-          <hr className="border-gray-100 my-6" />
+          <hr className="border-gray-100 my-3" />
 
           {/* Campo Crítico: Referencia (Podemos usar TextInput o dejarlo manual si quieres estilos especiales) */}
           <div className="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100">
@@ -452,10 +459,10 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
           <button
             type="submit"
             disabled={loading || loadingTasa}
-            className={`w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
               loading || loadingTasa
                 ? 'bg-gray-400 cursor-not-allowed transform-none shadow-none'
-                : 'bg-indigo-600 hover:bg-indigo-700'
+                : 'bg-indigo-600 hover:bg-indigo-700 hover:scale-102'
             }`}
           >
             {loading ? (
