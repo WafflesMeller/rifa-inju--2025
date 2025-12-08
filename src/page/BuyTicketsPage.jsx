@@ -18,7 +18,7 @@ const BuyTicketsPage = ({ tickets = [], selectedTickets = [], onToggle = () => {
         style={{ background: 'linear-gradient(90deg,#0f172a 0%, #1e293b 50%, #312e81 100%)' }}
       >
         {/* 2️⃣ El contenedor interno AHORA sí llena la pantalla */}
-        <div className="mx-auto w-full max-w-7xl flex flex-col flex-1">
+        <div className="mx-auto w-full max-w-7xl pb-18 flex flex-col flex-1">
           {/* HEADER */}
           <div className="mb-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

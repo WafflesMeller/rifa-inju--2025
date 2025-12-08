@@ -285,7 +285,7 @@ export default function MyTicketsPage({ onBack }) {
                     <Calendar className="w-3 h-3" />
                     {formatDate(compra.created_at)}
                   </span>
-                  <span>Rifa Gran Premio</span>
+                  <span>Rifa Gran SBR</span>
                 </div>
               </div>
             </div>
