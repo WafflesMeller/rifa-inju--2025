@@ -258,6 +258,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         data.append('mensaje', `✅ *CONFIRMACIÓN DE COMPRA*
 
 Hola, *${formData.nombre}*.
+
 Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. 
 Su participación en el sorteo ha quedado *confirmada*.
 
@@ -292,6 +293,7 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
               mensaje: `✅ *CONFIRMACIÓN DE COMPRA*
 
 Hola, *${formData.nombre}*.
+
 Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. 
 Su participación en el sorteo ha quedado *confirmada*.
 
