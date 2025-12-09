@@ -31,7 +31,7 @@ export default async function handler(req, res) {
   // Si en AI Studio viste otro nombre, CÁMBIALO AQUÍ.
   // Ejemplos válidos: "gemini-1.5-flash", "gemini-2.0-flash-exp"
   // =================================================================
-  const MODEL_NAME = "gemini-2.5-flash""; 
+  const MODEL_NAME = "gemini-2.5-flash"; 
 
   const systemPrompt = `
     Eres "El Oráculo de la Fortuna".
