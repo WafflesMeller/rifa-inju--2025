@@ -346,7 +346,7 @@ Si tiene alguna duda, este es nuestro canal oficial de atención.`);
           <div className="my-3 border-t border-dashed border-gray-200" />
           <div className="flex justify-between items-end">
             <div>
-              <p className="text-xs text-gray-500">Tasa BCV</p>
+              <p className="text-xs text-gray-500">Tasa Euro BCV</p>
               <p className="text-sm font-medium text-gray-700">{loadingTasa ? '...' : formatearBs(tasaBCV)}</p>
             </div>
             <div className="text-right">
@@ -354,7 +354,7 @@ Si tiene alguna duda, este es nuestro canal oficial de atención.`);
               <p className="text-2xl font-black text-slate-900 tracking-tight">
                 {loadingTasa ? 'Calculando...' : formatearBs(montoEnBs)}
               </p>
-              <p className="text-xs text-gray-400 font-medium">({totalAmount} EUR)</p>
+              <p className="text-xs text-gray-400 font-medium">({totalAmount} REF)</p>
             </div>
           </div>
         </div>
