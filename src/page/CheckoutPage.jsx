@@ -335,8 +335,7 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
   return (
     <div className="flex flex-col lg:flex-row min-h-full bg-white">
       {/* ---------------------------------------------------- */}
-      {/* SECCIÓN IZQUIERDA (Desktop) / SUPERIOR (Mobile):     */}
-      {/* Resumen de Compra y Datos Bancarios                  */}
+      {/* SECCIÓN IZQUIERDA: Resumen y Banco                   */}
       {/* ---------------------------------------------------- */}
       <div className="w-full lg:w-5/12 bg-slate-50 border-b lg:border-b-0 lg:border-r border-gray-200 p-3 lg:p-4 order-1 lg:order-1">
         <h2 className="text-xl font-bold text-slate-800">Resumen del Pedido</h2>
@@ -367,15 +366,13 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
           </div>
         </div>
 
-        {/* Tarjeta de Datos Bancarios (Estilo Visual) */}
-        <div className="relative overflow-hidden rounded-xl bg-linear-to-br from-emerald-600 to-teal-700 text-white p-5 shadow-lg">
+        {/* Tarjeta de Datos Bancarios */}
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-5 shadow-lg">
           <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
-
           <div className="flex items-center gap-2 mb-4 opacity-90">
             <Receipt className="w-5 h-5" />
             <span className="text-sm font-semibold tracking-wide uppercase">Pago Móvil</span>
           </div>
-
           <div className="space-y-2 text-sm">
             <div className="flex justify-between border-b border-white/20 pb-1">
               <span className="text-emerald-100">Banco</span>
@@ -390,7 +387,6 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
               <span className="font-semibold font-mono">V-26.597.356</span>
             </div>
           </div>
-
           <button
             onClick={copyPaymentDetails}
             className="mt-4 w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white rounded-lg py-2 px-4 text-sm font-medium transition flex items-center justify-center gap-2 hover:scale-105 "
@@ -406,7 +402,6 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
             onClick={abrirLinkBDV}
             className="group w-full bg-white font-medium py-2.5 px-4 rounded-xl border border-gray-300 hover:scale-102 text-gray-800 transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
           >
-            {/* Logo sin fondo ni borde extra, estilo minimalista */}
             <img
               src="/bdv-logo.png"
               alt="BDV"
@@ -418,12 +413,10 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
       </div>
 
       {/* ---------------------------------------------------- */}
-      {/* SECCIÓN DERECHA (Desktop) / INFERIOR (Mobile):       */}
-      {/* Formulario de Usuario                                */}
+      {/* SECCIÓN DERECHA: Formulario de Usuario               */}
       {/* ---------------------------------------------------- */}
       <div className="w-full lg:w-7/12 p-3 lg:p-4 bg-white order-2 lg:order-2">
         <h2 className="text-xl font-bold text-gray-900 mb-3">Validación del Pago</h2>
-
         {errorMsg && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md animate-in fade-in slide-in-from-top-2">
             <p className="text-sm text-red-700 font-medium">{errorMsg}</p>
@@ -431,11 +424,8 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Fila 1 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {/* 👇 USAS CedulaInput */}
             <CedulaInput label="Cédula" name="cedula" value={formData.cedula} onChange={handleChange} required />
-            {/* 👇 USAS TextInput */}
             <TextInput
               label="Nombre Completo"
               name="nombre"
@@ -447,9 +437,7 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
             />
           </div>
 
-          {/* Fila 2 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {/* 👇 USAS PhoneInput */}
             <PhoneInput
               label="Teléfono WhatsApp"
               name="telefono"
@@ -477,7 +465,6 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
 
           <hr className="border-gray-100 my-3" />
 
-          {/* Campo Crítico: Referencia (Podemos usar TextInput o dejarlo manual si quieres estilos especiales) */}
           <div className="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100">
             <label className="block text-sm font-semibold text-indigo-900 mb-2">
               Últimos 4 dígitos de la Referencia
@@ -524,32 +511,22 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
           </button>
         </form>
       </div>
-    </div>
 
-
-{/* ==================================================================================
-          👻 GHOST TICKET (TICKET FANTASMA)
-          Este elemento está oculto visualmente para el usuario (fuera de la pantalla),
-          pero html-to-image lo usará para generar la imagen.
-          Copiamos EXACTAMENTE el diseño de MyTicketsPage.
+      {/* ==================================================================================
+          👻 TICKET FANTASMA (AHORA SÍ ESTÁ DENTRO DEL DIV PRINCIPAL)
       ================================================================================== */}
       <div 
         style={{ 
           position: 'absolute', 
           top: 0, 
-          left: '-9999px', // Lo sacamos de la pantalla
-          width: '500px'   // Ancho fijo para que la imagen salga perfecta
+          left: '-9999px',
+          width: '500px'
         }}
       >
-        {/* Solo renderizamos si tenemos datos para la foto */}
         {receiptData && (
           <div ref={receiptRef} className="relative bg-white rounded-3xl overflow-hidden shadow-2xl font-poppins text-gray-900">
-            
-            {/* Cabecera Colorida */}
             <div className="h-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-
             <div className="p-8">
-              {/* Encabezado del Ticket */}
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Comprador</p>
@@ -566,14 +543,12 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
                 </div>
               </div>
 
-              {/* Línea Punteada Decorativa */}
               <div className="relative flex items-center justify-center my-8">
                 <div className="absolute -left-12 w-8 h-8 bg-white border-r border-gray-200 rounded-full"></div> 
                 <div className="w-full border-t-4 border-dashed border-gray-200"></div>
                 <div className="absolute -right-12 w-8 h-8 bg-white border-l border-gray-200 rounded-full"></div> 
               </div>
 
-              {/* Números */}
               <div className="mb-6">
                 <p className="text-sm font-medium text-gray-500 mb-4 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-yellow-500" />
@@ -581,20 +556,14 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {receiptData.tickets.map((num) => (
-                    <div
-                      key={num}
-                      className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 flex flex-col items-center min-w-[90px]"
-                    >
+                    <div key={num} className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 flex flex-col items-center min-w-[90px]">
                       <span className="text-xs text-gray-400 uppercase font-bold">Ticket</span>
-                      <span className="text-3xl font-black text-gray-800 tracking-tighter">
-                        {num}
-                      </span>
+                      <span className="text-3xl font-black text-gray-800 tracking-tighter">{num}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Footer del Ticket */}
               <div className="mt-8 pt-4 border-t border-gray-100 flex justify-between items-center text-sm text-gray-400">
                 <span className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -608,5 +577,5 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
       </div>
 
     </div>
-  );
-}
+  ); // <--- AQUÍ TERMINA EL RETURN
+} // <--- AQUÍ TERMINA LA FUNCIÓN
