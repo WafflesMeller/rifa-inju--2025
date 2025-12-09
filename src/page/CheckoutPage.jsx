@@ -272,7 +272,7 @@ ${ticketsListados}
 
 _Estos números ya son suyos y nadie más podrá adquirirlos._
 
-Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
+Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo. 
 
 *_Si tiene alguna duda, este es nuestro canal oficial de atención._*`);
         
