@@ -497,5 +497,88 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
         </form>
       </div>
     </div>
+
+
+{/* ==================================================================================
+          👻 GHOST TICKET (TICKET FANTASMA)
+          Este elemento está oculto visualmente para el usuario (fuera de la pantalla),
+          pero html-to-image lo usará para generar la imagen.
+          Copiamos EXACTAMENTE el diseño de MyTicketsPage.
+      ================================================================================== */}
+      <div 
+        style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: '-9999px', // Lo sacamos de la pantalla
+          width: '500px'   // Ancho fijo para que la imagen salga perfecta
+        }}
+      >
+        {/* Solo renderizamos si tenemos datos para la foto */}
+        {receiptData && (
+          <div ref={receiptRef} className="relative bg-white rounded-3xl overflow-hidden shadow-2xl font-poppins text-gray-900">
+            
+            {/* Cabecera Colorida */}
+            <div className="h-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+
+            <div className="p-8">
+              {/* Encabezado del Ticket */}
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Comprador</p>
+                  <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <User className="w-6 h-6 text-indigo-500" />
+                    {receiptData.nombre}
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold border border-emerald-100 mb-1">
+                    <CheckCircle className="w-4 h-4" /> PAGADO
+                  </div>
+                  <p className="text-sm text-gray-400 font-mono">Recibo #{receiptData.id}</p>
+                </div>
+              </div>
+
+              {/* Línea Punteada Decorativa */}
+              <div className="relative flex items-center justify-center my-8">
+                <div className="absolute -left-12 w-8 h-8 bg-white border-r border-gray-200 rounded-full"></div> 
+                <div className="w-full border-t-4 border-dashed border-gray-200"></div>
+                <div className="absolute -right-12 w-8 h-8 bg-white border-l border-gray-200 rounded-full"></div> 
+              </div>
+
+              {/* Números */}
+              <div className="mb-6">
+                <p className="text-sm font-medium text-gray-500 mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-yellow-500" />
+                  Tus Números Oficiales:
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {receiptData.tickets.map((num) => (
+                    <div
+                      key={num}
+                      className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 flex flex-col items-center min-w-[90px]"
+                    >
+                      <span className="text-xs text-gray-400 uppercase font-bold">Ticket</span>
+                      <span className="text-3xl font-black text-gray-800 tracking-tighter">
+                        {num}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer del Ticket */}
+              <div className="mt-8 pt-4 border-t border-gray-100 flex justify-between items-center text-sm text-gray-400">
+                <span className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  {new Date(receiptData.fecha).toLocaleDateString('es-VE')}
+                </span>
+                <span className="font-bold text-indigo-300">LA GRAN RIFA 2025</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+    </div>
   );
 }
