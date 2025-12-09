@@ -524,8 +524,7 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
           </button>
         </form>
       </div>
-    </div>
-
+    
 {/* ==================================================================================
           👻 GHOST TICKET (TICKET FANTASMA)
           Este elemento está oculto visualmente para el usuario (fuera de la pantalla),
