@@ -1,5 +1,5 @@
 // =====================================================================
-// ARCHIVO: api/oracle.js
+// ARCHIVO: api/oracle.js (Modo Diagnóstico)
 // =====================================================================
 
 export default async function handler(req, res) {
@@ -15,19 +15,28 @@ export default async function handler(req, res) {
   }
 
   const { userContext } = req.body || {};
+  
+  // 1. Verificamos si la API Key existe en Vercel
   const apiKey = process.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+      return res.status(200).json({
+          numbers: [0, 0, 0],
+          message: "ERROR TÉCNICO: No se encontró la API KEY en las variables de Vercel."
+      });
+  }
 
-  // Prompt del sistema
   const systemPrompt = `
-    Eres "El Oráculo de la Fortuna", un numerólogo místico.
+    Eres "El Oráculo de la Fortuna".
     Tu objetivo es interpretar el texto del usuario y generar 3 números de la suerte (000-999).
     Responde SOLO en JSON: { "numbers": [123, 45, 999], "message": "Texto aquí..." }
   `;
 
   try {
-    // NOTA: Usamos el modelo que sale en tu captura. 
-    // Si falla, prueba cambiarlo a "gemini-1.5-flash" que es el estándar global.
-    const MODEL_NAME = "gemini-2.5-flash"; 
+    // 2. CAMBIO IMPORTANTE: Usamos el modelo ESTÁNDAR (1.5) para descartar errores de versión
+    // Si esto funciona, luego podemos intentar volver al 2.5
+    const MODEL_NAME = "gemini-1.5-flash"; 
+
+    console.log(`🔮 Consultando modelo: ${MODEL_NAME}...`);
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`,
@@ -43,6 +52,7 @@ export default async function handler(req, res) {
     );
 
     if (!response.ok) {
+        // Leemos el error exacto que manda Google
         const errorText = await response.text();
         throw new Error(`Google Error ${response.status}: ${errorText}`);
     }
@@ -50,15 +60,15 @@ export default async function handler(req, res) {
     const data = await response.json();
     const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
-    // Devolvemos la respuesta limpia al Frontend
     res.status(200).json(JSON.parse(resultText));
 
   } catch (error) {
     console.error("❌ Error Oracle:", error.message);
-    // Respuesta de respaldo si Google falla
+    
+    // 3. MODO CHISMOSO: Devolvemos el error real al usuario para que lo leas
     res.status(200).json({
-      numbers: [777, 111, 333],
-      message: "La conexión mística falló, pero el destino te regala estos números."
+      numbers: [0, 0, 0],
+      message: `DIAGNÓSTICO: ${error.message}` // <--- Aquí verás el error real
     });
   }
 }
