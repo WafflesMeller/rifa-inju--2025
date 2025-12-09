@@ -1,6 +1,8 @@
 // src/App.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
+
+// Importación de Componentes
 import Navbar from './components/Navbar';
 import FloatingCheckoutBar from './components/FloatingCheckoutBar';
 import BuyTicketsPage from './page/BuyTicketsPage';
@@ -9,48 +11,56 @@ import HomePage from './page/HomePage';
 import CheckoutPage from './page/CheckoutPage';
 import MyTicketsPage from './page/MyTicketsPage';
 
-// Inicializamos Supabase
+// Inicialización de Supabase
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function App() {
+  // --- ESTADOS GLOBALES ---
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('inicio');
   const [selectedTickets, setSelectedTickets] = useState([]);
 
-  const TICKET_PRICE = '3';
-
-  // Estado para guardar los tickets vendidos
+  // Estado de Tickets
   const [soldTicketsSet, setSoldTicketsSet] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  // Estado para mostrar carga cuando verifica disponibilidad
-  const [verificando, setVerificando] = useState(false);
+  const [verificando, setVerificando] = useState(false); // Spinner durante validación de compra
 
-  // --- 1. CARGAR VENDIDOS AL INICIO ---
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const { data, error } = await supabase.from('tickets_vendidos').select('numero');
+  const TICKET_PRICE = '3';
 
-        if (error) {
-          console.error('❌ Error cargando tickets:', error);
-        } else {
-          // Normalizamos a string de 3 dígitos
-          const numerosOcupados = new Set(data.map((fila) => fila.numero.toString().padStart(3, '0')));
-          setSoldTicketsSet(numerosOcupados);
-        }
-      } catch (err) {
-        console.error('❌ Error de conexión:', err);
-      } finally {
-        setLoading(false);
+  // 🟢 MEJORA 1: Función de carga extraída y memorizada con useCallback.
+  // Esto permite llamarla manualmente cuando la compra sea exitosa.
+  const fetchSoldTickets = useCallback(async () => {
+    try {
+      // Hacemos la petición a Supabase
+      const { data, error } = await supabase
+        .from('tickets_vendidos')
+        .select('numero');
+
+      if (error) {
+        console.error('❌ Error cargando tickets:', error);
+      } else {
+        // Convertimos los datos a un Set para búsqueda rápida (O(1))
+        const numerosOcupados = new Set(
+          data.map((fila) => fila.numero.toString().padStart(3, '0'))
+        );
+        setSoldTicketsSet(numerosOcupados);
       }
-    };
+    } catch (err) {
+      console.error('❌ Error de conexión:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []); // Sin dependencias, se crea una sola vez
 
-    fetchTickets();
-  }, []);
+  // 🟢 MEJORA 2: El useEffect ahora solo llama a la función optimizada
+  useEffect(() => {
+    fetchSoldTickets();
+  }, [fetchSoldTickets]);
 
-  // --- 2. GENERAR TABLERO ---
+  // --- LÓGICA DEL TABLERO ---
+  // Generamos los 1000 tickets. useMemo evita recálculos innecesarios.
   const tickets = useMemo(() => {
     return Array.from({ length: 1000 }, (_, i) => {
       const idFormateado = i.toString().padStart(3, '0');
@@ -61,6 +71,7 @@ export default function App() {
     });
   }, [soldTicketsSet]);
 
+  // Manejador para seleccionar/deseleccionar tickets
   const handleTicketToggle = (number) => {
     setSelectedTickets((prev) => {
       if (prev.includes(number)) {
@@ -71,45 +82,52 @@ export default function App() {
     });
   };
 
+  // Función auxiliar para el oráculo (si se usa)
   const handleAddFromOracle = (number) => {
     const numString = number.toString().padStart(3, '0');
-    setSelectedTickets((prev) => (prev.includes(numString) ? prev : [...prev, numString]));
+    setSelectedTickets((prev) => 
+      prev.includes(numString) ? prev : [...prev, numString]
+    );
   };
 
-  // --- 3. NUEVA FUNCIÓN: VERIFICAR ANTES DE PAGAR ---
+  // --- LÓGICA DE VERIFICACIÓN PRE-PAGO ---
   const handleProceedToCheckout = async () => {
     if (selectedTickets.length === 0) return;
 
-    setVerificando(true); // Podrías usar esto para poner un spinner en el botón flotante
+    setVerificando(true); // Activa overlay de carga
 
     try {
-      // Preguntamos a Supabase: "¿Alguno de estos tickets YA existe en la tabla vendidos?"
-      const { data, error } = await supabase.from('tickets_vendidos').select('numero').in('numero', selectedTickets); // Check masivo eficiente
+      // Consulta de seguridad: ¿Alguien compró estos números hace un segundo?
+      const { data, error } = await supabase
+        .from('tickets_vendidos')
+        .select('numero')
+        .in('numero', selectedTickets);
 
       if (error) throw error;
 
       if (data && data.length > 0) {
-        // 🚨 CASO: ALGUIEN NOS GANÓ DE MANO
-        const vendidosEncontrados = data.map((d) => d.numero.toString().padStart(3, '0'));
+        // 🚨 CASO: Conflicto, números ya vendidos
+        const vendidosEncontrados = data.map((d) => 
+          d.numero.toString().padStart(3, '0')
+        );
 
-        // 1. Actualizamos el tablero visualmente (los ponemos naranja)
+        // 1. Actualizamos visualmente el tablero
         setSoldTicketsSet((prev) => {
           const nuevoSet = new Set(prev);
           vendidosEncontrados.forEach((n) => nuevoSet.add(n));
           return nuevoSet;
         });
 
-        // 2. Los sacamos del carrito del usuario
-        setSelectedTickets((prev) => prev.filter((t) => !vendidosEncontrados.includes(t)));
+        // 2. Removemos los vendidos del carrito del usuario
+        setSelectedTickets((prev) => 
+          prev.filter((t) => !vendidosEncontrados.includes(t))
+        );
 
-        // 3. Avisamos al usuario
         alert(
-          `⚠️ Lo sentimos. Los siguientes números acaban de ser vendidos a otra persona: ${vendidosEncontrados.join(
-            ', '
-          )}. Han sido removidos de tu selección.`
+          `⚠️ Lo sentimos. Los números ${vendidosEncontrados.join(', ')} acaban de ser vendidos. Han sido removidos de tu selección.`
         );
       } else {
-        // ✅ CASO: TODO LIMPIO, PASE A PAGAR
+        // ✅ CASO: Todo libre, ir al pago
         setActiveTab('checkout');
       }
     } catch (err) {
@@ -133,6 +151,7 @@ export default function App() {
         totalAmount={totalAmount}
       />
 
+      {/* --- SECCIÓN: INICIO --- */}
       {activeTab === 'inicio' && (
         <HomePage
           TICKET_PRICE={TICKET_PRICE}
@@ -142,16 +161,17 @@ export default function App() {
         />
       )}
 
+      {/* --- SECCIÓN: ORÁCULO --- */}
       {activeTab === 'oracle' && (
         <OraclePage
           soldTickets={soldTicketsSet}
           selectedTickets={selectedTickets}
-          // CORRECCIÓN: Cambia handleTicketClick por handleTicketToggle
           onAddNumbers={handleTicketToggle}
           onRemoveNumber={handleTicketToggle}
         />
       )}
 
+      {/* --- SECCIÓN: COMPRAR TICKETS --- */}
       {activeTab === 'comprar' &&
         (loading ? (
           <div className="flex flex-col items-center justify-center py-20">
@@ -159,35 +179,56 @@ export default function App() {
             <p className="text-gray-500 font-bold animate-pulse">Cargando tickets...</p>
           </div>
         ) : (
-          <BuyTicketsPage tickets={tickets} selectedTickets={selectedTickets} onToggle={handleTicketToggle} />
+          <BuyTicketsPage 
+            tickets={tickets} 
+            selectedTickets={selectedTickets} 
+            onToggle={handleTicketToggle} 
+          />
         ))}
 
+      {/* --- SECCIÓN: CHECKOUT (PAGO) --- */}
       {activeTab === 'checkout' && (
         <CheckoutPage
           selectedTickets={selectedTickets}
           totalAmount={totalAmount}
           onBack={() => setActiveTab('comprar')}
-          onSuccess={() => {
+          
+          // 🟢 MEJORA 3: onSuccess optimizado (Sin reload)
+          onSuccess={async () => {
+            // 1. Limpiamos el carrito
             setSelectedTickets([]);
+            
+            // 2. Mostramos carga brevemente si lo deseas, o simplemente actualizamos en segundo plano
+            setLoading(true);
+            
+            // 3. ✨ ACTUALIZAMOS DATOS DESDE SUPABASE
+            await fetchSoldTickets();
+            
+            setLoading(false);
+
+            // 4. Redirigimos al inicio
             setActiveTab('inicio');
-            window.location.reload();
+            
+            // 5. Feedback al usuario
+            alert("¡Compra procesada con éxito! Tus tickets han sido registrados.");
           }}
         />
       )}
 
-      {activeTab === 'mis-tickets' && <MyTicketsPage onBack={() => setActiveTab('inicio')} />}
+      {/* --- SECCIÓN: MIS TICKETS --- */}
+      {activeTab === 'mis-tickets' && (
+        <MyTicketsPage onBack={() => setActiveTab('inicio')} />
+      )}
 
-      {/* AQUÍ CONECTAMOS LA VERIFICACIÓN:
-        En lugar de ir directo a 'checkout', llamamos a handleProceedToCheckout 
-      */}
+      {/* --- BARRA FLOTANTE DE PAGO --- */}
       <FloatingCheckoutBar
         selectedTickets={selectedTickets}
         totalAmount={totalAmount}
         onClear={() => setSelectedTickets([])}
-        onGoToComprar={handleProceedToCheckout} // <--- CAMBIO CLAVE AQUÍ
+        onGoToComprar={handleProceedToCheckout}
       />
 
-      {/* Opcional: Overlay de carga mientras verifica */}
+      {/* --- OVERLAY DE CARGA (VERIFICACIÓN) --- */}
       {verificando && (
         <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-xl flex items-center gap-3">
