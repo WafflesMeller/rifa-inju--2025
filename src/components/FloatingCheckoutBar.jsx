@@ -3,33 +3,34 @@ import React, { useState, useEffect } from "react";
 import { ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import ModalConfirm from "./ModalConfirm";
 
+
 const FloatingCheckoutBar = ({
   selectedTickets = [],
   totalAmount = 0,
   onClear = () => {},
 }) => {
   // ---------------------------------------------------------
-  // 1. ZONA DE HOOKS (SIEMPRE PRIMERO)
+  // 1. ZONA DE HOOKS
   // ---------------------------------------------------------
   
-  // Estado para animación de entrada/salida de la barra
-  const [isVisible, setIsVisible] = useState(true);
+  // CORRECCIÓN: Inicializamos el estado basado en si hay tickets. 
+  // Si iniciamos en 'true' y no hay tickets, haría una animación de salida al cargar la página.
+  const [isVisible, setIsVisible] = useState(selectedTickets.length > 0);
 
-  // Estado para abrir/cerrar el Modal de Formulario
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-
-  // Estado para abrir/cerrar el Modal de Éxito (Confetti)
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
 
-  // Efecto para controlar la visibilidad
+  // Efecto para controlar la visibilidad (Animación CSS)
   useEffect(() => {
     setIsVisible(selectedTickets.length > 0);
   }, [selectedTickets]);
 
   // ---------------------------------------------------------
-  // 2. RETORNO TEMPRANO (DESPUÉS DE LOS HOOKS)
+  // 2. CORRECCIÓN IMPORTANTE:
+  // Eliminamos el "if (...) return null" que había aquí.
+  // Esto permite que el componente siga existiendo en el DOM para animarse hacia abajo
+  // cuando isVisible cambia a false.
   // ---------------------------------------------------------
-  if (!selectedTickets || selectedTickets.length === 0) return null;
 
   // ---------------------------------------------------------
   // 3. RENDERIZADO
@@ -116,14 +117,19 @@ const FloatingCheckoutBar = ({
       <ModalConfirm 
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
-        selectedTickets={selectedTickets} // Usamos las props del componente padre
-        totalAmount={totalAmount}         // Usamos las props del componente padre
+        selectedTickets={selectedTickets}
+        totalAmount={totalAmount}
         onClear={onClear}
-        // Cuando el pago es exitoso en el formulario, cerramos ese y abrimos el de éxito
         onPaymentSuccess={() => {
           setIsSuccessOpen(true);
         }}
       />
+
+      {/* 2. Modal de Éxito (Si lo tienes implementado) */}
+      {/* <PaymentSuccessModal 
+        isOpen={isSuccessOpen} 
+        onClose={() => setIsSuccessOpen(false)} 
+      /> */}
     </>
   );
 };

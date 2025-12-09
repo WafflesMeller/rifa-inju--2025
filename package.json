@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
+    "@react-icons/all-files": "^4.1.0",
     "@supabase/supabase-js": "^2.86.2",
     "@tailwindcss/vite": "^4.1.17",
     "cheerio": "^1.1.2",
@@ -18,12 +19,15 @@
     "express": "^5.2.1",
     "got": "^14.6.5",
     "html-to-image": "^1.11.13",
+    "install": "^0.13.0",
     "lucide-react": "^0.555.0",
     "partycles": "^1.2.6",
     "qs": "^6.14.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-icons": "^5.5.0",
     "react-modal-sheet": "^5.2.1",
+    "react-npm": "^2.6.1",
     "react-router-dom": "^7.10.1",
     "tailwindcss": "^4.1.17",
     "tough-cookie": "^6.0.0"

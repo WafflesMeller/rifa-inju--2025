@@ -121,7 +121,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                         value="30 Diciembre"
                         icon={CalendarDays}
                         color="bg-yellow-500"
-                        hint="¡Triple Chance • No te lo pierdas!"
+                        hint="¡Triple Chance AAA • 7:00 p.m. • No te lo pierdas!"
                       />
                     </div>
 
@@ -143,7 +143,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
         </div>
       </section>
 
-<section className="w-full flex justify-center mt-10 py-3 sm:px-6 lg:px-8">
+<section className="w-full flex justify-center mt-10 mb-10 py-3 sm:px-6 lg:px-8">
   <div className="w-full max-w-7xl flex flex-col items-center text-center">
     <div className="mb-8">
       <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900">Premios Increíbles</h3>
@@ -162,7 +162,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
 
       <PrizeCard variant="second" rank="2do" title="Smart TV 43'" image="/tv.png" />
 
-      <PrizeCard variant="third" rank="3er" title="$100 Dólares" image="/dolar.png" />
+      <PrizeCard variant="third" rank="3er" title="$100 Dólares" image="/dinero.png" />
     </div>
   </div>
 </section>

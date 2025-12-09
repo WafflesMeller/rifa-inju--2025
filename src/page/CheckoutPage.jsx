@@ -1,5 +1,5 @@
 // src/page/CheckoutPage.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, act } from 'react';
 import { supabase } from '../supabase.js';
 import { createPortal } from 'react-dom';
 import ModalRecibo from '../components/ModalRecibo';
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 
 import { TextInput, CedulaInput, PhoneInput } from '../components/FormInputs';
+import TicketCard from '../components/TicketCard.jsx';
 
 // URL del Bot de WhatsApp
 const BOT_API_URL = 'https://whatsapp-server-rifa.onrender.com';
@@ -279,19 +280,12 @@ Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro 
 Su participación en el sorteo ha quedado *confirmada*.
 
 A continuación, su comprobante digital:
-🆔 *Pago N°:* #LG2025${ventaData.id}
+🆔 *Recibo:* #LG2025-${ventaData.id}
 📅 *Fecha:* ${fechaHoy}
 👤 *Titular:* ${formData.nombre}
 
 🎟 *SU(S) NUMERO(S):*
 ${ticketsListados}
-<<<<<<< HEAD
-Estos números ya son suyos y nadie más podrá adquirirlos.
-Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
-Si tiene alguna duda, este es nuestro canal oficial de atención.`
-        );
-
-=======
 
 _Estos números ya son suyos y nadie más podrá adquirirlos._
 
@@ -299,7 +293,6 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
 
 *_Si tiene alguna duda, este es nuestro canal oficial de atención._*`);
         
->>>>>>> 41056a6971b4872b6229b6f74e21858a4c0305fe
         data.append('media', imageBlob, `ticket-${ventaData.id}.png`);
 
         await fetch(BOT_API_URL + '/enviar-mensaje-media', {
@@ -309,16 +302,6 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
       } else {
         // Fallback
         await fetch(BOT_API_URL + '/enviar-mensaje', {
-<<<<<<< HEAD
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            numero: formData.telefono,
-            mensaje: `✅ *CONFIRMACIÓN DE COMPRA (Sin imagen)*\n\nHola, *${formData.nombre}*.\nPago N°: #LG2025${
-              ventaData.id
-            }\nTickets: ${selectedTickets.join(', ')}`,
-          }),
-=======
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -344,7 +327,6 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
 
 *_Si tiene alguna duda, este es nuestro canal oficial de atención._*`
             }),
->>>>>>> 41056a6971b4872b6229b6f74e21858a4c0305fe
         }).catch(console.warn);
       }
 
@@ -560,69 +542,30 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
       {/* ==================================================================================
           👻 TICKET FANTASMA (Solo se ve cuando se va a tomar la foto)
       ================================================================================== */}
+{/* Contenedor oculto para generación de imagen/PDF */}
       <div
         style={{
           position: 'absolute',
           top: 0,
           left: '-9999px',
-          width: '500px',
+          width: '500px', // Ancho fijo para que la imagen salga con buen formato
         }}
       >
         {receiptData && (
-          <div
-            ref={receiptRef}
-            className="relative bg-white rounded-3xl overflow-hidden shadow-2xl font-poppins text-gray-900"
-          >
-            <div className="h-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-            <div className="p-8">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Comprador</p>
-                  <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                    <User className="w-6 h-6 text-indigo-500" />
-                    {receiptData.nombre}
-                  </h3>
-                </div>
-                <div className="text-right">
-                  <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold border border-emerald-100 mb-1">
-                    <CheckCircle className="w-4 h-4" /> PAGADO
-                  </div>
-                  <p className="text-sm text-gray-400 font-mono">Recibo #{receiptData.id}</p>
-                </div>
-              </div>
+          <div ref={receiptRef} className="p-4 bg-transparent">
+            {/* Reutilizamos tu componente TicketCard */}
+            <TicketCard
+            active={true}
+              compra={{
+                // ADAPTADOR: Mapeamos los datos de receiptData al formato que espera el componente
+                id: receiptData.id,
+                nombre_cliente: receiptData.nombre, 
+                tickets_seleccionados: receiptData.tickets,
+                created_at: receiptData.fecha,
+                estado: 'pagado' // Forzamos el estado visual
 
-              <div className="relative flex items-center justify-center my-8">
-                <div className="absolute -left-12 w-8 h-8 bg-white border-r border-gray-200 rounded-full"></div>
-                <div className="w-full border-t-4 border-dashed border-gray-200"></div>
-                <div className="absolute -right-12 w-8 h-8 bg-white border-l border-gray-200 rounded-full"></div>
-              </div>
-
-              <div className="mb-6">
-                <p className="text-sm font-medium text-gray-500 mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-yellow-500" />
-                  Tus Números Oficiales:
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {receiptData.tickets.map((num) => (
-                    <div
-                      key={num}
-                      className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 flex flex-col items-center min-w-[90px]"
-                    >
-                      <span className="text-xs text-gray-400 uppercase font-bold">Ticket</span>
-                      <span className="text-3xl font-black text-gray-800 tracking-tighter">{num}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-8 pt-4 border-t border-gray-100 flex justify-between items-center text-sm text-gray-400">
-                <span className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  {new Date(receiptData.fecha).toLocaleDateString('es-VE')}
-                </span>
-                <span className="font-bold text-indigo-300">LA GRAN RIFA 2025</span>
-              </div>
-            </div>
+              }} 
+            />
           </div>
         )}
       </div>

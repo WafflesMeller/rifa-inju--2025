@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { TicketCheck, MessageCircle } from 'lucide-react';
 // Hook de partycles (misma forma que en tu PaymentSuccessModal)
 import { useReward } from 'partycles';
+import { MdWhatsapp } from "react-icons/md";
+
 
 export default function ModalRecibo({ isOpen, data, onClose }) {
   const [showModal, setShowModal] = useState(false);
@@ -91,7 +93,8 @@ export default function ModalRecibo({ isOpen, data, onClose }) {
               Hemos procesado tu solicitud correctamente. <br />
               Los detalles de tu compra llegarán a tu
               <span className="text-green-400 font-semibold inline-flex items-center gap-1 ml-1">
-                WhatsApp <MessageCircle size={14} />
+                WhatsApp <MdWhatsapp size={14} />
+
               </span>.
             </p>
           </div>
