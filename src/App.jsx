@@ -25,15 +25,13 @@ export default function App() {
   // Estado de Tickets
   const [soldTicketsSet, setSoldTicketsSet] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  const [verificando, setVerificando] = useState(false); // Spinner durante validación de compra
+  const [verificando, setVerificando] = useState(false);
 
   const TICKET_PRICE = '3';
 
-  // 🟢 MEJORA 1: Función de carga extraída y memorizada con useCallback.
-  // Esto permite llamarla manualmente cuando la compra sea exitosa.
+  // Función de carga inicial (se mantiene igual)
   const fetchSoldTickets = useCallback(async () => {
     try {
-      // Hacemos la petición a Supabase
       const { data, error } = await supabase
         .from('tickets_vendidos')
         .select('numero');
@@ -41,7 +39,6 @@ export default function App() {
       if (error) {
         console.error('❌ Error cargando tickets:', error);
       } else {
-        // Convertimos los datos a un Set para búsqueda rápida (O(1))
         const numerosOcupados = new Set(
           data.map((fila) => fila.numero.toString().padStart(3, '0'))
         );
@@ -52,15 +49,41 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, []); // Sin dependencias, se crea una sola vez
+  }, []);
 
-  // 🟢 MEJORA 2: El useEffect ahora solo llama a la función optimizada
+  // 🟢 CAMBIO PRINCIPAL: LÓGICA REALTIME
   useEffect(() => {
+    // 1. Cargar datos existentes al abrir la app
     fetchSoldTickets();
+
+    // 2. Suscribirse a NUEVAS ventas en tiempo real
+    const channel = supabase
+      .channel('tickets_realtime') // Nombre del canal (puede ser cualquiera)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'tickets_vendidos' },
+        (payload) => {
+          // Cuando entra una venta nueva, la agregamos al Set inmediatamente
+          const nuevoNumero = payload.new.numero.toString().padStart(3, '0');
+          
+          setSoldTicketsSet((prevSet) => {
+            const newSet = new Set(prevSet);
+            newSet.add(nuevoNumero);
+            return newSet;
+          });
+          
+          console.log(`🔔 Nuevo ticket vendido recibido en tiempo real: ${nuevoNumero}`);
+        }
+      )
+      .subscribe();
+
+    // 3. Limpieza al salir del componente
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchSoldTickets]);
 
   // --- LÓGICA DEL TABLERO ---
-  // Generamos los 1000 tickets. useMemo evita recálculos innecesarios.
   const tickets = useMemo(() => {
     return Array.from({ length: 1000 }, (_, i) => {
       const idFormateado = i.toString().padStart(3, '0');
@@ -71,7 +94,6 @@ export default function App() {
     });
   }, [soldTicketsSet]);
 
-  // Manejador para seleccionar/deseleccionar tickets
   const handleTicketToggle = (number) => {
     setSelectedTickets((prev) => {
       if (prev.includes(number)) {
@@ -82,7 +104,6 @@ export default function App() {
     });
   };
 
-  // Función auxiliar para el oráculo (si se usa)
   const handleAddFromOracle = (number) => {
     const numString = number.toString().padStart(3, '0');
     setSelectedTickets((prev) => 
@@ -93,11 +114,9 @@ export default function App() {
   // --- LÓGICA DE VERIFICACIÓN PRE-PAGO ---
   const handleProceedToCheckout = async () => {
     if (selectedTickets.length === 0) return;
-
-    setVerificando(true); // Activa overlay de carga
+    setVerificando(true);
 
     try {
-      // Consulta de seguridad: ¿Alguien compró estos números hace un segundo?
       const { data, error } = await supabase
         .from('tickets_vendidos')
         .select('numero')
@@ -106,19 +125,16 @@ export default function App() {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        // 🚨 CASO: Conflicto, números ya vendidos
         const vendidosEncontrados = data.map((d) => 
           d.numero.toString().padStart(3, '0')
         );
 
-        // 1. Actualizamos visualmente el tablero
         setSoldTicketsSet((prev) => {
           const nuevoSet = new Set(prev);
           vendidosEncontrados.forEach((n) => nuevoSet.add(n));
           return nuevoSet;
         });
 
-        // 2. Removemos los vendidos del carrito del usuario
         setSelectedTickets((prev) => 
           prev.filter((t) => !vendidosEncontrados.includes(t))
         );
@@ -127,7 +143,6 @@ export default function App() {
           `⚠️ Lo sentimos. Los números ${vendidosEncontrados.join(', ')} acaban de ser vendidos. Han sido removidos de tu selección.`
         );
       } else {
-        // ✅ CASO: Todo libre, ir al pago
         setActiveTab('checkout');
       }
     } catch (err) {
@@ -193,23 +208,11 @@ export default function App() {
           totalAmount={totalAmount}
           onBack={() => setActiveTab('comprar')}
           
-          // 🟢 MEJORA 3: onSuccess optimizado (Sin reload)
-          onSuccess={async () => {
-            // 1. Limpiamos el carrito
+          // 🟢 CAMBIO: onSuccess simplificado
+          // Ya no hacemos fetchSoldTickets() manual porque el Realtime lo hará solo
+          onSuccess={() => {
             setSelectedTickets([]);
-            
-            // 2. Mostramos carga brevemente si lo deseas, o simplemente actualizamos en segundo plano
-            setLoading(true);
-            
-            // 3. ✨ ACTUALIZAMOS DATOS DESDE SUPABASE
-            await fetchSoldTickets();
-            
-            setLoading(false);
-
-            // 4. Redirigimos al inicio
             setActiveTab('inicio');
-            
-            // 5. Feedback al usuario
             alert("¡Compra procesada con éxito! Tus tickets han sido registrados.");
           }}
         />
