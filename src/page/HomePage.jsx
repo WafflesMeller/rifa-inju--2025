@@ -117,18 +117,18 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
 
                     <div className="px-2">
                       <StatCounter
-                        title="Fecha Sorteo"
-                        value="31 Diciembre"
+                        title="Detalles del Sorteo"
+                        value="30 Diciembre"
                         icon={CalendarDays}
                         color="bg-yellow-500"
-                        hint="¡No te lo pierdas!"
+                        hint="¡Triple Chance • No te lo pierdas!"
                       />
                     </div>
 
                     <div className="px-2">
                       <StatCounter
                         title="Valor del Boleto"
-                        value={`${TICKET_PRICE} €`}
+                        value={`${TICKET_PRICE} REF`}
                         icon={CircleDollarSign}
                         color="bg-green-500"
                         hint="A tasa Euro BCV • Pago seguro"
