@@ -1,9 +1,9 @@
 // =====================================================================
-// ARCHIVO: api/oracle.js (Versión Inteligente Multi-Modelo)
+// ARCHIVO: api/oracle.js (Versión Directa - Un solo modelo)
 // =====================================================================
 
 export default async function handler(req, res) {
-  // Configuración CORS
+  // 1. Configuración CORS (Permisos para que Vercel hable con tu frontend)
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -14,27 +14,24 @@ export default async function handler(req, res) {
     return;
   }
 
+  // 2. Obtener datos y API Key
   const { userContext } = req.body || {};
-  const apiKey = process.env.VITE_GEMINI_API_KEY;
+  const apiKey = process.env.VITE_GEMINI_API_KEY; // O process.env.GEMINI_API_KEY según como la llamaste en Vercel
 
   if (!apiKey) {
-      return res.status(200).json({
+      console.error("❌ Error: No se encontró la API KEY.");
+      return res.status(500).json({
           numbers: [0, 0, 0],
-          message: "ERROR: Falta la API Key en Vercel."
+          message: "ERROR CONFIG: Falta la API Key en las variables de entorno."
       });
   }
 
-  // LISTA DE MODELOS A PROBAR (En orden de preferencia)
-  // 1. El que viste en tu cuenta (2.5)
-  // 2. El estándar actual (1.5-flash)
-  // 3. Una variante de versión (1.5-flash-latest)
-  // 4. El clásico confiable (gemini-pro)
-  const CANDIDATE_MODELS = [
-      "gemini-2.5-flash", 
-      "gemini-1.5-flash", 
-      "gemini-1.5-flash-latest", 
-      "gemini-pro"
-  ];
+  // =================================================================
+  // 3. CONFIGURACIÓN DEL MODELO ÚNICO
+  // Si en AI Studio viste otro nombre, CÁMBIALO AQUÍ.
+  // Ejemplos válidos: "gemini-1.5-flash", "gemini-2.0-flash-exp"
+  // =================================================================
+  const MODEL_NAME = "gemini-1.5-flash"; 
 
   const systemPrompt = `
     Eres "El Oráculo de la Fortuna".
@@ -42,11 +39,11 @@ export default async function handler(req, res) {
     Responde SOLO en JSON: { "numbers": [123, 45, 999], "message": "Texto aquí..." }
   `;
 
-  // Función auxiliar para intentar llamar a un modelo específico
-  const tryModel = async (modelName) => {
-    console.log(`🔮 Intentando con modelo: ${modelName}...`);
+  try {
+    console.log(`🔮 Consultando al oráculo usando modelo: ${MODEL_NAME}...`);
+
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,43 +55,33 @@ export default async function handler(req, res) {
       }
     );
 
+    // 4. Manejo de Errores de la API
     if (!response.ok) {
-        // Si es 404, lanzamos un error especial para saber que podemos probar el siguiente
-        if (response.status === 404) throw new Error("MODEL_NOT_FOUND");
-        
-        // Si es otro error (como 400 o 500), devolvemos el texto para debug
-        const txt = await response.text();
-        throw new Error(`API_ERROR: ${txt}`);
+        const errorData = await response.text();
+        console.error(`❌ Error en la API de Google (${response.status}):`, errorData);
+        throw new Error(`Google API Error: ${response.status} - ${errorData}`);
     }
 
+    // 5. Procesar Respuesta
     const data = await response.json();
-    return JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text);
-  };
+    
+    // Extraemos el texto JSON que devuelve la IA
+    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!aiText) {
+        throw new Error("La IA no devolvió ningún texto.");
+    }
 
-  // BUCLE DE INTENTOS
-  let lastError = "";
-  
-  for (const model of CANDIDATE_MODELS) {
-      try {
-          const result = await tryModel(model);
-          // ¡ÉXITO! Devolvemos el resultado y terminamos
-          return res.status(200).json(result);
-      } catch (error) {
-          console.warn(`⚠️ Falló ${model}: ${error.message}`);
-          lastError = error.message;
-          
-          // Si el error NO es "No encontrado" (ej: es un error de sintaxis), paramos y reportamos.
-          // Si ES "No encontrado" (MODEL_NOT_FOUND), el bucle continúa con el siguiente modelo.
-          if (error.message !== "MODEL_NOT_FOUND") {
-               break; 
-          }
-      }
+    const result = JSON.parse(aiText);
+    
+    // Enviamos la respuesta limpia al frontend
+    return res.status(200).json(result);
+
+  } catch (error) {
+      console.error("💥 Error General:", error.message);
+      return res.status(200).json({
+        numbers: [0, 0, 0],
+        message: `Error del Oráculo: ${error.message}`
+      });
   }
-
-  // Si llegamos aquí, fallaron todos los modelos
-  console.error("❌ Todos los modelos fallaron.");
-  res.status(200).json({
-    numbers: [0, 0, 0],
-    message: `DIAGNÓSTICO FINAL: No pudimos conectar con ningún modelo. Último error: ${lastError}`
-  });
 }
