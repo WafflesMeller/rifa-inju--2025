@@ -3,7 +3,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase.js';
 import { createPortal } from 'react-dom';
 import ModalRecibo from '../components/ModalRecibo';
-import { Copy, Check, User, Phone, MapPin, CreditCard, Hash, Receipt } from 'lucide-react';
+// 1️⃣ CÁMARA: Importamos la librería
+import { toBlob } from 'html-to-image'; 
+
+// 2️⃣ ICONOS: Agregué CheckCircle, Calendar y Sparkles que faltaban y causaban el error
+import { Copy, Check, User, Phone, MapPin, CreditCard, Hash, Receipt, CheckCircle, Calendar, Sparkles } from 'lucide-react';
 
 import { TextInput, CedulaInput, PhoneInput } from '../components/FormInputs';
 
@@ -29,6 +33,10 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
 
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [datosVentaFinal, setDatosVentaFinal] = useState(null);
+
+  // 3️⃣ ESTADO: Necesario para el Ticket Fantasma
+  const [receiptData, setReceiptData] = useState(null);
+  const receiptRef = useRef(null);
 
   // --- Lógica de Tasa y Cálculos ---
   useEffect(() => {
@@ -65,9 +73,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
 
   // --- Lógica de Copiado ---
   const copyPaymentDetails = async () => {
-    const text = `Pago Móvil\nBanco: Venezuela (0102)\nTlf: 0424-292-9579\nCI: V-26.597.356\nMonto: ${formatearBs(
-      montoEnBs
-    )}`;
+    const text = `Pago Móvil\nBanco: Venezuela (0102)\nTlf: 0424-292-9579\nCI: V-26.597.356\nMonto: ${formatearBs(montoEnBs)}`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -77,22 +83,14 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
     }
   };
 
-  // --- NUEVA FUNCIÓN: Abrir Link Universal BDV ---
+  // --- Abrir Link Universal BDV ---
   const abrirLinkBDV = () => {
-    // 1. Datos Fijos (Tus datos)
     const RECEPTOR_ID = 'V26597356';
     const RECEPTOR_TLF = '584242929579';
     const RECEPTOR_BANCO = '0102';
-
-    // 2. Datos Dinámicos (Monto y Descripción)
     const montoFormateado = montoEnBs.toFixed(2);
-    // Descripción simple para evitar errores
     const descripcion = '9dxBliWt4XnVSB0LTqNasQ%3D%3D';
-
-    // 3. Construir el Link Universal
     const linkBDV = `https://bdvdigital.banvenez.com/pagomovil?id=${RECEPTOR_ID}&phone=${RECEPTOR_TLF}&bank=${RECEPTOR_BANCO}&description=${descripcion}&amount=${montoFormateado}`;
-
-    // 4. Abrir en nueva pestaña (En móvil abrirá la App)
     window.open(linkBDV, '_blank');
   };
 
@@ -101,24 +99,19 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
     e.preventDefault();
     setErrorMsg('');
 
-    // Variables de control para Rollback (Deshacer cambios si falla)
     let ventaIdCreada = null;
     let pagoIdUsado = null;
 
     if (loadingTasa) return;
 
-    // Validación de campos vacíos
     if (!formData.nombre || !formData.telefono || !formData.referencia) {
       setErrorMsg('Por favor completa los campos obligatorios.');
       return;
     }
 
-    // 🛡️ SEGURIDAD 1: VERIFICACIÓN MATEMÁTICA
-    // Calculamos cuánto debería costar (Precio x Cantidad x Tasa)
-    const PRECIO_BASE = 3; // 3$ (Asegúrate que coincida con tu constante TICKET_PRICE)
+    const PRECIO_BASE = 3; 
     const montoEsperado = selectedTickets.length * PRECIO_BASE * tasaBCV;
 
-    // Damos un margen de 1 Bolívar por redondeos
     if (Math.abs(montoEsperado - montoEnBs) > 1.0) {
       setErrorMsg('⚠️ Error de seguridad: El monto no coincide con la cantidad de tickets.');
       return;
@@ -127,7 +120,6 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
     setLoading(true);
 
     try {
-      // Calcular fecha límite (48h atrás)
       const fechaLimite = new Date();
       fechaLimite.setHours(fechaLimite.getHours() - 48);
       const fechaISO = fechaLimite.toISOString();
@@ -154,9 +146,9 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         throw new Error('⚠️ Esta referencia ya fue reportada y procesada anteriormente.');
       }
 
-      pagoIdUsado = pagoEncontrado.id; // Guardamos ID para posible rollback
+      pagoIdUsado = pagoEncontrado.id;
 
-      // 1.5. VERIFICACIÓN FINAL DE DISPONIBILIDAD (Anti-Colisión)
+      // 1.5. VERIFICACIÓN FINAL DE DISPONIBILIDAD
       const { data: ocupadosData, error: ocupadosError } = await supabase
         .from('tickets_vendidos')
         .select('numero')
@@ -173,8 +165,8 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       const { data: ventaData, error: ventaError } = await supabase
         .from('ventas')
         .insert({
-          nombre_cliente: formData.nombre.trim().toUpperCase(), // Mayúsculas
-          telefono: formData.telefono, // Teléfono limpio (58...)
+          nombre_cliente: formData.nombre.trim().toUpperCase(),
+          telefono: formData.telefono,
           cedula: formData.cedula,
           direccion: formData.direccion,
           telefono_familiar: formData.telefonoFamiliar,
@@ -190,9 +182,9 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
 
       if (ventaError) throw ventaError;
 
-      ventaIdCreada = ventaData.id; // Guardamos ID para posible rollback
+      ventaIdCreada = ventaData.id;
 
-      // 3. ACTUALIZAR EL PAGO (Marcar usado)
+      // 3. ACTUALIZAR EL PAGO
       const { data: datosActualizados, error: updateError } = await supabase
         .from('historial_pagos')
         .update({
@@ -205,15 +197,12 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       if (updateError) throw new Error('Error técnico al actualizar pago: ' + updateError.message);
 
       if (!datosActualizados || datosActualizados.length === 0) {
-        throw new Error(
-          'El sistema de seguridad bloqueó la actualización del pago. Por favor revise su conexión a internet.'
-        );
+        throw new Error('El sistema de seguridad bloqueó la actualización del pago.');
       }
 
       // 4. REGISTRAR TICKETS INDIVIDUALES
       const ticketsParaInsertar = selectedTickets.map((numero) => ({
         numero: numero,
-        // 🛡️ CORRECCIÓN CRÍTICA: Convertimos cédula a NÚMERO (BigInt)
         cedula_comprador: parseInt(formData.cedula.replace(/\D/g, '')),
         venta_id: ventaData.id,
       }));
@@ -221,14 +210,48 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       const { error: ticketsError } = await supabase.from('tickets_vendidos').insert(ticketsParaInsertar);
 
       if (ticketsError) {
-        // Si es error de duplicado (código 23505), personalizamos el mensaje
         if (ticketsError.code === '23505') {
           throw new Error('Error crítico: Uno de los tickets ya fue vendido.');
         }
         throw new Error('Error reservando tickets: ' + ticketsError.message);
       }
 
-      // 5. ENVIAR AL BOT (Con Imagen)
+      // =========================================================================
+      // 📸 4.5. GENERAR LA IMAGEN (Aquí estaba el fallo original)
+      // =========================================================================
+      
+      const fechaHoy = new Date().toLocaleDateString('es-VE');
+      const ticketsListados = selectedTickets.map(t => `🔹 [${t}]`).join('\n');
+
+      // A. Rellenamos los datos del ticket fantasma
+      setReceiptData({
+        id: ventaData.id,
+        nombre: formData.nombre,
+        tickets: selectedTickets,
+        fecha: new Date().toISOString()
+      });
+
+      // B. Esperamos un momento a que React pinte el ticket oculto
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // C. Tomamos la foto
+      let imageBlob = null;
+      try {
+        if (receiptRef.current) {
+          imageBlob = await toBlob(receiptRef.current, {
+            cacheBust: true,
+            backgroundColor: '#ffffff',
+            pixelRatio: 2
+          });
+        }
+      } catch (err) {
+        console.error("Error al generar la imagen del ticket:", err);
+      }
+
+      // =========================================================================
+      // 5. ENVIAR AL BOT
+      // =========================================================================
+      
       if (imageBlob) {
         const data = new FormData();
         data.append('numero', formData.telefono);
@@ -249,100 +272,69 @@ Estos números ya son suyos y nadie más podrá adquirirlos.
 
 Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
 
-Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier duda o reclamo, no dude en escribirnos.`);
-        // Adjuntamos la imagen generada
+Si tiene alguna duda, este es nuestro canal oficial de atención.`);
+        
         data.append('media', imageBlob, `ticket-${ventaData.id}.png`);
 
-       // NOTA: Tu API del bot debe aceptar multipart/form-data
         await fetch(BOT_API_URL + '/enviar-mensaje-media', { 
           method: 'POST',
           body: data 
         }).catch(console.warn);
+
       } else {
-        // Fallback: Si falla la imagen, enviar solo texto (Tu código anterior)
+        // Fallback
         await fetch(BOT_API_URL + '/enviar-mensaje', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               numero: formData.telefono,
-              mensaje:`✅ *CONFIRMACIÓN DE COMPRA*
-
-Hola, *${formData.nombre}*.
-Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. Su participación en el sorteo ha quedado *confirmada y asegurada*.
-
-A continuación, su comprobante digital:
-🆔 *Pago N°:* #LG2025${ventaData.id}
-📅 *Fecha:* ${fechaHoy}
-👤 *Titular:* ${formData.nombre}
-
-🎟 *SU(S) NUMERO(S):*
-${ticketsListados}
-
-Estos números ya son suyos y nadie más podrá adquirirlos.
-
-Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
-
-Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier duda o reclamo, no dude en escribirnos.`
-}),
+              mensaje: `✅ *CONFIRMACIÓN DE COMPRA (Sin imagen)*\n\nHola, *${formData.nombre}*.\nPago N°: #LG2025${ventaData.id}\nTickets: ${selectedTickets.join(', ')}`
+            }),
         }).catch(console.warn);
       }
 
-      // Finalizar con éxito
       const datosFinales = { ...ventaData, tickets: selectedTickets };
       setDatosVentaFinal(datosFinales);
       setMostrarConfirmacion(true);
+
     } catch (err) {
       console.error(err);
 
-      // 🚨 ZONA DE ROLLBACK (DESHACER CAMBIOS) 🚨
-      // Si llegamos aquí, significa que algo falló a mitad de camino.
-
       if (ventaIdCreada) {
-        console.log('🔄 Rollback: Eliminando venta incompleta...');
         await supabase.from('ventas').delete().eq('id', ventaIdCreada);
       }
-
       if (pagoIdUsado) {
-        console.log('🔄 Rollback: Liberando pago...');
-        // Liberamos el pago para que el usuario pueda intentar de nuevo
         await supabase.from('historial_pagos').update({ usada: false, venta_id: null }).eq('id', pagoIdUsado);
       }
 
       setErrorMsg(
-        err.message || 'Error al procesar el pago. Por favor revise su conexión a internet e intentelo nuevamente.'
+        err.message || 'Error al procesar el pago. Por favor revise su conexión a internet e inténtelo nuevamente.'
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // --- Componentes UI Internos ---
-  // --- RENDERIZADO DEL MODAL DE ÉXITO ---
   if (mostrarConfirmacion) {
-    // Usamos el Portal para sacarlo al body y que se vea ENCIMA del otro modal
     return createPortal(
       <ModalRecibo
         isOpen={true}
         data={datosVentaFinal}
         onClose={() => {
-          // Esto limpia y cierra todo
           onSuccess(datosVentaFinal);
         }}
       />,
       document.body
     );
   }
+
   return (
     <div className="flex flex-col lg:flex-row min-h-full bg-white">
-      {/* ---------------------------------------------------- */}
-      {/* SECCIÓN IZQUIERDA (Desktop) / SUPERIOR (Mobile):     */}
-      {/* Resumen de Compra y Datos Bancarios                  */}
-      {/* ---------------------------------------------------- */}
+      {/* SECCIÓN IZQUIERDA: Resumen */}
       <div className="w-full lg:w-5/12 bg-slate-50 border-b lg:border-b-0 lg:border-r border-gray-200 p-3 lg:p-4 order-1 lg:order-1">
         <h2 className="text-xl font-bold text-slate-800">Resumen del Pedido</h2>
         <p className="text-sm text-slate-500 mb-3">Revisa los detalles antes de pagar.</p>
 
-        {/* Tarjeta de Tickets */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-3">
           <div className="flex justify-between items-start mb-2">
             <span className="text-sm font-medium text-gray-600">Tickets Seleccionados</span>
@@ -367,15 +359,13 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
           </div>
         </div>
 
-        {/* Tarjeta de Datos Bancarios (Estilo Visual) */}
-        <div className="relative overflow-hidden rounded-xl bg-linear-to-br from-emerald-600 to-teal-700 text-white p-5 shadow-lg">
+        {/* Tarjeta Banco */}
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-5 shadow-lg">
           <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
-
           <div className="flex items-center gap-2 mb-4 opacity-90">
             <Receipt className="w-5 h-5" />
             <span className="text-sm font-semibold tracking-wide uppercase">Pago Móvil</span>
           </div>
-
           <div className="space-y-2 text-sm">
             <div className="flex justify-between border-b border-white/20 pb-1">
               <span className="text-emerald-100">Banco</span>
@@ -390,7 +380,6 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
               <span className="font-semibold font-mono">V-26.597.356</span>
             </div>
           </div>
-
           <button
             onClick={copyPaymentDetails}
             className="mt-4 w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white rounded-lg py-2 px-4 text-sm font-medium transition flex items-center justify-center gap-2 hover:scale-105 "
@@ -406,7 +395,6 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
             onClick={abrirLinkBDV}
             className="group w-full bg-white font-medium py-2.5 px-4 rounded-xl border border-gray-300 hover:scale-102 text-gray-800 transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
           >
-            {/* Logo sin fondo ni borde extra, estilo minimalista */}
             <img
               src="/bdv-logo.png"
               alt="BDV"
@@ -417,13 +405,9 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
         </div>
       </div>
 
-      {/* ---------------------------------------------------- */}
-      {/* SECCIÓN DERECHA (Desktop) / INFERIOR (Mobile):       */}
-      {/* Formulario de Usuario                                */}
-      {/* ---------------------------------------------------- */}
+      {/* SECCIÓN DERECHA: Formulario */}
       <div className="w-full lg:w-7/12 p-3 lg:p-4 bg-white order-2 lg:order-2">
         <h2 className="text-xl font-bold text-gray-900 mb-3">Validación del Pago</h2>
-
         {errorMsg && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md animate-in fade-in slide-in-from-top-2">
             <p className="text-sm text-red-700 font-medium">{errorMsg}</p>
@@ -431,11 +415,8 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Fila 1 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {/* 👇 USAS CedulaInput */}
             <CedulaInput label="Cédula" name="cedula" value={formData.cedula} onChange={handleChange} required />
-            {/* 👇 USAS TextInput */}
             <TextInput
               label="Nombre Completo"
               name="nombre"
@@ -447,9 +428,7 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
             />
           </div>
 
-          {/* Fila 2 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {/* 👇 USAS PhoneInput */}
             <PhoneInput
               label="Teléfono WhatsApp"
               name="telefono"
@@ -477,7 +456,6 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
 
           <hr className="border-gray-100 my-3" />
 
-          {/* Campo Crítico: Referencia (Podemos usar TextInput o dejarlo manual si quieres estilos especiales) */}
           <div className="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100">
             <label className="block text-sm font-semibold text-indigo-900 mb-2">
               Últimos 4 dígitos de la Referencia
@@ -524,30 +502,22 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
           </button>
         </form>
       </div>
-    
-{/* ==================================================================================
-          👻 GHOST TICKET (TICKET FANTASMA)
-          Este elemento está oculto visualmente para el usuario (fuera de la pantalla),
-          pero html-to-image lo usará para generar la imagen.
-          Copiamos EXACTAMENTE el diseño de MyTicketsPage.
+
+      {/* ==================================================================================
+          👻 TICKET FANTASMA (Solo se ve cuando se va a tomar la foto)
       ================================================================================== */}
       <div 
         style={{ 
           position: 'absolute', 
           top: 0, 
-          left: '-9999px', // Lo sacamos de la pantalla
-          width: '500px'   // Ancho fijo para que la imagen salga perfecta
+          left: '-9999px',
+          width: '500px'
         }}
       >
-        {/* Solo renderizamos si tenemos datos para la foto */}
         {receiptData && (
           <div ref={receiptRef} className="relative bg-white rounded-3xl overflow-hidden shadow-2xl font-poppins text-gray-900">
-            
-            {/* Cabecera Colorida */}
             <div className="h-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-
             <div className="p-8">
-              {/* Encabezado del Ticket */}
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Comprador</p>
@@ -564,14 +534,12 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
                 </div>
               </div>
 
-              {/* Línea Punteada Decorativa */}
               <div className="relative flex items-center justify-center my-8">
                 <div className="absolute -left-12 w-8 h-8 bg-white border-r border-gray-200 rounded-full"></div> 
                 <div className="w-full border-t-4 border-dashed border-gray-200"></div>
                 <div className="absolute -right-12 w-8 h-8 bg-white border-l border-gray-200 rounded-full"></div> 
               </div>
 
-              {/* Números */}
               <div className="mb-6">
                 <p className="text-sm font-medium text-gray-500 mb-4 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-yellow-500" />
@@ -579,20 +547,14 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {receiptData.tickets.map((num) => (
-                    <div
-                      key={num}
-                      className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 flex flex-col items-center min-w-[90px]"
-                    >
+                    <div key={num} className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 flex flex-col items-center min-w-[90px]">
                       <span className="text-xs text-gray-400 uppercase font-bold">Ticket</span>
-                      <span className="text-3xl font-black text-gray-800 tracking-tighter">
-                        {num}
-                      </span>
+                      <span className="text-3xl font-black text-gray-800 tracking-tighter">{num}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Footer del Ticket */}
               <div className="mt-8 pt-4 border-t border-gray-100 flex justify-between items-center text-sm text-gray-400">
                 <span className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -606,5 +568,5 @@ Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier
       </div>
 
     </div>
-); // <--- AQUÍ TERMINA EL RETURN
+  );
 }
