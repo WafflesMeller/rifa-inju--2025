@@ -229,16 +229,33 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       }
 
       // 5. ENVIAR WHATSAPP
+      // Preparamos la fecha y la lista de tickets vertical
+      const fechaHoy = new Date().toLocaleDateString('es-VE'); // Formato día/mes/año
+      const ticketsListados = selectedTickets.map(t => `🔹 [${t}]`).join('\n');
+
       fetch(BOT_API_URL + '/enviar-mensaje', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           numero: formData.telefono,
-          mensaje: `Hola ${
-            formData.nombre
-          } 👋\n\n✅ Tu compra fue procesada con éxito.\n🎟️ Tickets: ${selectedTickets.join(', ')}\n🧾 ID de Recibo: #${
-            ventaData.id
-          }\n\n¡Mucha suerte! 🍀`,
+          mensaje: `✅ *CONFIRMACIÓN DE COMPRA*
+
+Hola, *${formData.nombre}*.
+Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. Su participación en el sorteo ha quedado *confirmada y asegurada*.
+
+A continuación, su comprobante digital:
+🆔 *Pago N°:* #LG2025${ventaData.id}
+📅 *Fecha:* ${fechaHoy}
+👤 *Titular:* ${formData.nombre}
+
+🎟 *SU(S) NUMERO(S):*
+${ticketsListados}
+
+Estos números ya son suyos y nadie más podrá adquirirlos.
+
+Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
+
+Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier duda o reclamo, no dude en escribirnos.`,
         }),
       }).catch(console.warn);
 
