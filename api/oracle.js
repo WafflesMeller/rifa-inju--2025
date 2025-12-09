@@ -1,5 +1,5 @@
 // =====================================================================
-// ARCHIVO: api/oracle.js
+// ARCHIVO: api/oracle.js (Versión Inteligente Multi-Modelo)
 // =====================================================================
 
 export default async function handler(req, res) {
@@ -17,20 +17,36 @@ export default async function handler(req, res) {
   const { userContext } = req.body || {};
   const apiKey = process.env.VITE_GEMINI_API_KEY;
 
-  // Prompt del sistema
+  if (!apiKey) {
+      return res.status(200).json({
+          numbers: [0, 0, 0],
+          message: "ERROR: Falta la API Key en Vercel."
+      });
+  }
+
+  // LISTA DE MODELOS A PROBAR (En orden de preferencia)
+  // 1. El que viste en tu cuenta (2.5)
+  // 2. El estándar actual (1.5-flash)
+  // 3. Una variante de versión (1.5-flash-latest)
+  // 4. El clásico confiable (gemini-pro)
+  const CANDIDATE_MODELS = [
+      "gemini-2.5-flash", 
+      "gemini-1.5-flash", 
+      "gemini-1.5-flash-latest", 
+      "gemini-pro"
+  ];
+
   const systemPrompt = `
-    Eres "El Oráculo de la Fortuna", un numerólogo místico.
-    Tu objetivo es interpretar el texto del usuario y generar 3 números de la suerte (000-999).
+    Eres "El Oráculo de la Fortuna".
+    Interpreta el texto del usuario y genera 3 números de la suerte (000-999).
     Responde SOLO en JSON: { "numbers": [123, 45, 999], "message": "Texto aquí..." }
   `;
 
-  try {
-    // NOTA: Usamos el modelo que sale en tu captura. 
-    // Si falla, prueba cambiarlo a "gemini-1.5-flash" que es el estándar global.
-    const MODEL_NAME = "gemini-2.5-flash"; 
-
+  // Función auxiliar para intentar llamar a un modelo específico
+  const tryModel = async (modelName) => {
+    console.log(`🔮 Intentando con modelo: ${modelName}...`);
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -43,22 +59,42 @@ export default async function handler(req, res) {
     );
 
     if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Google Error ${response.status}: ${errorText}`);
+        // Si es 404, lanzamos un error especial para saber que podemos probar el siguiente
+        if (response.status === 404) throw new Error("MODEL_NOT_FOUND");
+        
+        // Si es otro error (como 400 o 500), devolvemos el texto para debug
+        const txt = await response.text();
+        throw new Error(`API_ERROR: ${txt}`);
     }
 
     const data = await response.json();
-    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    // Devolvemos la respuesta limpia al Frontend
-    res.status(200).json(JSON.parse(resultText));
+    return JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text);
+  };
 
-  } catch (error) {
-    console.error("❌ Error Oracle:", error.message);
-    // Respuesta de respaldo si Google falla
-    res.status(200).json({
-      numbers: [777, 111, 333],
-      message: "La conexión mística falló, pero el destino te regala estos números."
-    });
+  // BUCLE DE INTENTOS
+  let lastError = "";
+  
+  for (const model of CANDIDATE_MODELS) {
+      try {
+          const result = await tryModel(model);
+          // ¡ÉXITO! Devolvemos el resultado y terminamos
+          return res.status(200).json(result);
+      } catch (error) {
+          console.warn(`⚠️ Falló ${model}: ${error.message}`);
+          lastError = error.message;
+          
+          // Si el error NO es "No encontrado" (ej: es un error de sintaxis), paramos y reportamos.
+          // Si ES "No encontrado" (MODEL_NOT_FOUND), el bucle continúa con el siguiente modelo.
+          if (error.message !== "MODEL_NOT_FOUND") {
+               break; 
+          }
+      }
   }
+
+  // Si llegamos aquí, fallaron todos los modelos
+  console.error("❌ Todos los modelos fallaron.");
+  res.status(200).json({
+    numbers: [0, 0, 0],
+    message: `DIAGNÓSTICO FINAL: No pudimos conectar con ningún modelo. Último error: ${lastError}`
+  });
 }
