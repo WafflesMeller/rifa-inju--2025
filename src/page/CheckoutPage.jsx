@@ -258,7 +258,8 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         data.append('mensaje', `✅ *CONFIRMACIÓN DE COMPRA*
 
 Hola, *${formData.nombre}*.
-Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. Su participación en el sorteo ha quedado *confirmada y asegurada*.
+Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. 
+Su participación en el sorteo ha quedado *confirmada*.
 
 A continuación, su comprobante digital:
 🆔 *Pago N°:* #LG2025${ventaData.id}
@@ -268,11 +269,11 @@ A continuación, su comprobante digital:
 🎟 *SU(S) NUMERO(S):*
 ${ticketsListados}
 
-Estos números ya son suyos y nadie más podrá adquirirlos.
+_Estos números ya son suyos y nadie más podrá adquirirlos._
 
 Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
 
-Si tiene alguna duda, este es nuestro canal oficial de atención.`);
+*_Si tiene alguna duda, este es nuestro canal oficial de atención._*`);
         
         data.append('media', imageBlob, `ticket-${ventaData.id}.png`);
 
@@ -288,7 +289,25 @@ Si tiene alguna duda, este es nuestro canal oficial de atención.`);
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               numero: formData.telefono,
-              mensaje: `✅ *CONFIRMACIÓN DE COMPRA (Sin imagen)*\n\nHola, *${formData.nombre}*.\nPago N°: #LG2025${ventaData.id}\nTickets: ${selectedTickets.join(', ')}`
+              mensaje: `✅ *CONFIRMACIÓN DE COMPRA*
+
+Hola, *${formData.nombre}*.
+Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. 
+Su participación en el sorteo ha quedado *confirmada*.
+
+A continuación, su comprobante digital:
+🆔 *Pago N°:* #LG2025${ventaData.id}
+📅 *Fecha:* ${fechaHoy}
+👤 *Titular:* ${formData.nombre}
+
+🎟 *SU(S) NUMERO(S):*
+${ticketsListados}
+
+_Estos números ya son suyos y nadie más podrá adquirirlos._
+
+Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
+
+*_Si tiene alguna duda, este es nuestro canal oficial de atención._*`
             }),
         }).catch(console.warn);
       }
