@@ -228,17 +228,11 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         throw new Error('Error reservando tickets: ' + ticketsError.message);
       }
 
-      // 5. ENVIAR WHATSAPP
-      // Preparamos la fecha y la lista de tickets vertical
-      const fechaHoy = new Date().toLocaleDateString('es-VE'); // Formato día/mes/año
-      const ticketsListados = selectedTickets.map(t => `🔹 [${t}]`).join('\n');
-
-      fetch(BOT_API_URL + '/enviar-mensaje', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          numero: formData.telefono,
-          mensaje: `✅ *CONFIRMACIÓN DE COMPRA*
+      // 5. ENVIAR AL BOT (Con Imagen)
+      if (imageBlob) {
+        const data = new FormData();
+        data.append('numero', formData.telefono);
+        data.append('mensaje', `✅ *CONFIRMACIÓN DE COMPRA*
 
 Hola, *${formData.nombre}*.
 Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. Su participación en el sorteo ha quedado *confirmada y asegurada*.
@@ -255,9 +249,43 @@ Estos números ya son suyos y nadie más podrá adquirirlos.
 
 Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
 
-Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier duda o reclamo, no dude en escribirnos.`,
-        }),
-      }).catch(console.warn);
+Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier duda o reclamo, no dude en escribirnos.`);
+        // Adjuntamos la imagen generada
+        data.append('media', imageBlob, `ticket-${ventaData.id}.png`);
+
+       // NOTA: Tu API del bot debe aceptar multipart/form-data
+        await fetch(BOT_API_URL + '/enviar-mensaje-media', { 
+          method: 'POST',
+          body: data 
+        }).catch(console.warn);
+      } else {
+        // Fallback: Si falla la imagen, enviar solo texto (Tu código anterior)
+        await fetch(BOT_API_URL + '/enviar-mensaje', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              numero: formData.telefono,
+              mensaje:`✅ *CONFIRMACIÓN DE COMPRA*
+
+Hola, *${formData.nombre}*.
+Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. Su participación en el sorteo ha quedado *confirmada y asegurada*.
+
+A continuación, su comprobante digital:
+🆔 *Pago N°:* #LG2025${ventaData.id}
+📅 *Fecha:* ${fechaHoy}
+👤 *Titular:* ${formData.nombre}
+
+🎟 *SU(S) NUMERO(S):*
+${ticketsListados}
+
+Estos números ya son suyos y nadie más podrá adquirirlos.
+
+Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
+
+Si tiene alguna duda, este es nuestro canal oficial de atención, ante cualquier duda o reclamo, no dude en escribirnos.`
+}),
+        }).catch(console.warn);
+      }
 
       // Finalizar con éxito
       const datosFinales = { ...ventaData, tickets: selectedTickets };
