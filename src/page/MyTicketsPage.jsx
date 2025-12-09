@@ -240,7 +240,7 @@ export default function MyTicketsPage({ onBack }) {
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Comprador</p>
                     <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                      <User className="w-5 h-5 text-indigo-500" />
+                      <User className="w-8 h-8 text-indigo-500" />
                       {compra.nombre_cliente}
                     </h3>
                   </div>
@@ -256,7 +256,8 @@ export default function MyTicketsPage({ onBack }) {
                 <div className="relative flex items-center justify-center my-6">
                   <div className="absolute -left-10 w-6 h-6 bg-[#161a2c] rounded-full"></div> {/* Muesca izq */}
                   <div className="w-full border-t-3 border-dashed border-gray-200"></div>
-                  <div className="absolute -right-10 w-6 h-6 bg-[#161a2c] rounded-full"></div> {/* Muesca der */}
+                  <div className="absolute -right-10 w-6 h-6 bg-[#161a2c] rounded-full "
+                  ></div> {/* Muesca der */}
                 </div>
 
                 <div>
@@ -269,7 +270,7 @@ export default function MyTicketsPage({ onBack }) {
                       compra.tickets_seleccionados.map((num) => (
                         <div
                           key={num}
-                          className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 flex flex-col items-center min-w-[80px] group-hover:border-indigo-200 group-hover:bg-indigo-50 transition-colors"
+                          className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 flex flex-col items-center min-w-20 group-hover:border-indigo-200 group-hover:bg-indigo-50 transition-colors"
                         >
                           <span className="text-xs text-gray-400 uppercase">Ticket</span>
                           <span className="text-2xl font-black text-gray-800 tracking-tighter group-hover:text-indigo-600">
@@ -285,7 +286,7 @@ export default function MyTicketsPage({ onBack }) {
                     <Calendar className="w-3 h-3" />
                     {formatDate(compra.created_at)}
                   </span>
-                  <span>Rifa Gran SBR</span>
+                  <span className='font-bold'>Gran Rifa 2025</span>
                 </div>
               </div>
             </div>

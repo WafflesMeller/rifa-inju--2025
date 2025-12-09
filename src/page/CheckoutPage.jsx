@@ -4,10 +4,22 @@ import { supabase } from '../supabase.js';
 import { createPortal } from 'react-dom';
 import ModalRecibo from '../components/ModalRecibo';
 // 1️⃣ CÁMARA: Importamos la librería
-import { toBlob } from 'html-to-image'; 
+import { toBlob } from 'html-to-image';
 
 // 2️⃣ ICONOS: Agregué CheckCircle, Calendar y Sparkles que faltaban y causaban el error
-import { Copy, Check, User, Phone, MapPin, CreditCard, Hash, Receipt, CheckCircle, Calendar, Sparkles } from 'lucide-react';
+import {
+  Copy,
+  Check,
+  User,
+  Phone,
+  MapPin,
+  CreditCard,
+  Hash,
+  Receipt,
+  CheckCircle,
+  Calendar,
+  Sparkles,
+} from 'lucide-react';
 
 import { TextInput, CedulaInput, PhoneInput } from '../components/FormInputs';
 
@@ -73,7 +85,9 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
 
   // --- Lógica de Copiado ---
   const copyPaymentDetails = async () => {
-    const text = `Pago Móvil\nBanco: Venezuela (0102)\nTlf: 0424-292-9579\nCI: V-26.597.356\nMonto: ${formatearBs(montoEnBs)}`;
+    const text = `Pago Móvil\nBanco: Venezuela (0102)\nTlf: 0424-292-9579\nCI: V-26.597.356\nMonto: ${formatearBs(
+      montoEnBs
+    )}`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -109,7 +123,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       return;
     }
 
-    const PRECIO_BASE = 3; 
+    const PRECIO_BASE = 3;
     const montoEsperado = selectedTickets.length * PRECIO_BASE * tasaBCV;
 
     if (Math.abs(montoEsperado - montoEnBs) > 1.0) {
@@ -219,20 +233,20 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
       // =========================================================================
       // 📸 4.5. GENERAR LA IMAGEN (Aquí estaba el fallo original)
       // =========================================================================
-      
+
       const fechaHoy = new Date().toLocaleDateString('es-VE');
-      const ticketsListados = selectedTickets.map(t => `🔹 [${t}]`).join('\n');
+      const ticketsListados = selectedTickets.map((t) => `🔹 [${t}]`).join('\n');
 
       // A. Rellenamos los datos del ticket fantasma
       setReceiptData({
         id: ventaData.id,
         nombre: formData.nombre,
         tickets: selectedTickets,
-        fecha: new Date().toISOString()
+        fecha: new Date().toISOString(),
       });
 
       // B. Esperamos un momento a que React pinte el ticket oculto
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // C. Tomamos la foto
       let imageBlob = null;
@@ -240,22 +254,24 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         if (receiptRef.current) {
           imageBlob = await toBlob(receiptRef.current, {
             cacheBust: true,
-            backgroundColor: '#ffffff',
-            pixelRatio: 2
+            backgroundColor: '#0000',
+            pixelRatio: 2,
           });
         }
       } catch (err) {
-        console.error("Error al generar la imagen del ticket:", err);
+        console.error('Error al generar la imagen del ticket:', err);
       }
 
       // =========================================================================
       // 5. ENVIAR AL BOT
       // =========================================================================
-      
+
       if (imageBlob) {
         const data = new FormData();
         data.append('numero', formData.telefono);
-        data.append('mensaje', `✅ *CONFIRMACIÓN DE COMPRA*
+        data.append(
+          'mensaje',
+          `✅ *CONFIRMACIÓN DE COMPRA*
 
 Hola, *${formData.nombre}*.
 Le informamos que hemos recibido y procesado su pago *correctamente* en nuestro sistema. Su participación en el sorteo ha quedado *confirmada y asegurada*.
@@ -267,36 +283,34 @@ A continuación, su comprobante digital:
 
 🎟 *SU(S) NUMERO(S):*
 ${ticketsListados}
-
 Estos números ya son suyos y nadie más podrá adquirirlos.
-
 Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
+Si tiene alguna duda, este es nuestro canal oficial de atención.`
+        );
 
-Si tiene alguna duda, este es nuestro canal oficial de atención.`);
-        
         data.append('media', imageBlob, `ticket-${ventaData.id}.png`);
 
-        await fetch(BOT_API_URL + '/enviar-mensaje-media', { 
+        await fetch(BOT_API_URL + '/enviar-mensaje-media', {
           method: 'POST',
-          body: data 
+          body: data,
         }).catch(console.warn);
-
       } else {
         // Fallback
         await fetch(BOT_API_URL + '/enviar-mensaje', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              numero: formData.telefono,
-              mensaje: `✅ *CONFIRMACIÓN DE COMPRA (Sin imagen)*\n\nHola, *${formData.nombre}*.\nPago N°: #LG2025${ventaData.id}\nTickets: ${selectedTickets.join(', ')}`
-            }),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            numero: formData.telefono,
+            mensaje: `✅ *CONFIRMACIÓN DE COMPRA (Sin imagen)*\n\nHola, *${formData.nombre}*.\nPago N°: #LG2025${
+              ventaData.id
+            }\nTickets: ${selectedTickets.join(', ')}`,
+          }),
         }).catch(console.warn);
       }
 
       const datosFinales = { ...ventaData, tickets: selectedTickets };
       setDatosVentaFinal(datosFinales);
       setMostrarConfirmacion(true);
-
     } catch (err) {
       console.error(err);
 
@@ -506,16 +520,19 @@ Si tiene alguna duda, este es nuestro canal oficial de atención.`);
       {/* ==================================================================================
           👻 TICKET FANTASMA (Solo se ve cuando se va a tomar la foto)
       ================================================================================== */}
-      <div 
-        style={{ 
-          position: 'absolute', 
-          top: 0, 
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
           left: '-9999px',
-          width: '500px'
+          width: '500px',
         }}
       >
         {receiptData && (
-          <div ref={receiptRef} className="relative bg-white rounded-3xl overflow-hidden shadow-2xl font-poppins text-gray-900">
+          <div
+            ref={receiptRef}
+            className="relative bg-white rounded-3xl overflow-hidden shadow-2xl font-poppins text-gray-900"
+          >
             <div className="h-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
             <div className="p-8">
               <div className="flex justify-between items-start mb-6">
@@ -535,9 +552,9 @@ Si tiene alguna duda, este es nuestro canal oficial de atención.`);
               </div>
 
               <div className="relative flex items-center justify-center my-8">
-                <div className="absolute -left-12 w-8 h-8 bg-white border-r border-gray-200 rounded-full"></div> 
+                <div className="absolute -left-12 w-8 h-8 bg-white border-r border-gray-200 rounded-full"></div>
                 <div className="w-full border-t-4 border-dashed border-gray-200"></div>
-                <div className="absolute -right-12 w-8 h-8 bg-white border-l border-gray-200 rounded-full"></div> 
+                <div className="absolute -right-12 w-8 h-8 bg-white border-l border-gray-200 rounded-full"></div>
               </div>
 
               <div className="mb-6">
@@ -547,7 +564,10 @@ Si tiene alguna duda, este es nuestro canal oficial de atención.`);
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {receiptData.tickets.map((num) => (
-                    <div key={num} className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 flex flex-col items-center min-w-[90px]">
+                    <div
+                      key={num}
+                      className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 flex flex-col items-center min-w-[90px]"
+                    >
                       <span className="text-xs text-gray-400 uppercase font-bold">Ticket</span>
                       <span className="text-3xl font-black text-gray-800 tracking-tighter">{num}</span>
                     </div>
@@ -566,7 +586,6 @@ Si tiene alguna duda, este es nuestro canal oficial de atención.`);
           </div>
         )}
       </div>
-
     </div>
   );
 }
