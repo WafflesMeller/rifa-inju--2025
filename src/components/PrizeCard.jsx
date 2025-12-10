@@ -87,7 +87,9 @@ const PrizeCard = ({ variant = 'second', rank = '2do', title, description, image
             style={{ width: 'auto', maxWidth: '100%' }}
           />
         ) : (
-          <div className="text-6xl animate-bounce">🎁</div>
+          <div className={`text-6xl ${isThird ? 'text-amber-500 animate-spin-slow' : 'text-gray-400 animate-bounce'}`}>
+            💵
+          </div>
         )}
       </div>
 
