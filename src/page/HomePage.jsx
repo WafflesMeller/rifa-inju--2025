@@ -169,16 +169,18 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
               description="Marca Da+co con Google TV"
               onCtaClick={comprar}
               ctaText="¡Quiero la Moto!"
-              image="/tv.webp" />
+              image="/tv.webp" 
+            />
 
             <PrizeCard 
               variant="third" 
               rank="3er" 
               title="$100 Dólares" 
               description="Entrega inmediata, vía efectivo o transferencia"
-              image="/dinero.webp" />
+              image="/dinero.webp" 
               onCtaClick={comprar}
               ctaText="¡Quiero la Moto!"
+            />
           </div>
         </div>
       </section>
