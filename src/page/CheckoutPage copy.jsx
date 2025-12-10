@@ -2,10 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-
 // URL del Bot de WhatsApp en Render (¡REEMPLAZA ESTO CON TU URL REAL!)
 const BOT_API_URL = 'https://whatsapp-server-rifa.onrender.com';
-
 
 export default function CheckoutPage({ selectedTickets, totalAmount, onBack, onSuccess }) {
   // --- ESTADOS DE TASA ---
@@ -169,7 +167,7 @@ export default function CheckoutPage({ selectedTickets, totalAmount, onBack, onS
                      {' '}
           <div>
                             <p className="text-sm text-gray-500">Total en Divisa:</p>               {' '}
-            <p className="text-xl font-bold text-gray-800">{totalAmount}€</p>           {' '}
+            <p className="text-xl font-bold text-gray-800">{totalAmount}REF</p>           {' '}
           </div>
                      {' '}
           <div className="text-right">

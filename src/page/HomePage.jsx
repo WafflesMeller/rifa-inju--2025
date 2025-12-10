@@ -67,7 +67,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                         onClick={() => setActiveTab('comprar')}
                         className="inline-flex items-center justify-center px-6 md:px-8 py-3 rounded-full text-base font-bold text-indigo-900 bg-white shadow-lg transform transition duration-200 hover:scale-105"
                       >
-                        Comprar Boleto • {TICKET_PRICE} €
+                        Comprar Boleto • {TICKET_PRICE} REF
                       </button>
 
                       <button
