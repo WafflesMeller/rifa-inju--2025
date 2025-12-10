@@ -23,15 +23,15 @@ const PrizeCard = ({ variant = 'second', rank = '2do', title, description, image
   };
 
    return (
-    <div
-      // 2. Agregar el manejador onClick y la clase cursor-pointer
-      onClick={onClick}
+    <div
+      onClick={onClick} 
       className={`
         relative group
         rounded-3xl 
         overflow-hidden h-full flex flex-col 
         transform transition-all duration-300 
         hover:scale-[1.02]
+        ${onClick ? 'cursor-pointer' : ''}  // Agregamos cursor-pointer si tiene un onClickreturn (
         ${isFirst 
           ? 'text-white shadow-xl shadow-indigo-900/20' 
           : 'bg-white text-gray-900 shadow-lg border border-gray-100 hover:border-indigo-100 hover:shadow-xl'
