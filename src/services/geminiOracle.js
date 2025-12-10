@@ -1,25 +1,35 @@
 // src/services/geminiOracle.js
 
+// ⚠️ PEGA AQUÍ LA URL QUE TE DIO CLOUDFLARE AL PUBLICAR EL WORKER
+const WORKER_URL = "https://tu-nombre-de-worker.tusuario.workers.dev"; 
+
 export const callGeminiOracle = async (userContext) => {
   try {
-    // Llamamos a NUESTRA propia API en Vercel
-    // Esto evita el bloqueo de Venezuela
-    const response = await fetch('/api/oracle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userContext }),
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: userContext // Enviamos lo que escribió el usuario
+      })
     });
 
-    if (!response.ok) throw new Error('Error en el servidor');
+    if (!response.ok) {
+      throw new Error(`Error del servidor: ${response.status}`);
+    }
 
     const data = await response.json();
+    
+    // El worker ya nos devuelve la estructura exacta { numbers: [], message: "" }
     return data;
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error conectando con el Oráculo:", error);
+    // Fallback de emergencia por si el Worker falla
     return {
-      numbers: [123, 456, 789],
-      message: "El oráculo está descansando. Intenta de nuevo."
+      numbers: [111, 222, 333],
+      message: "Los astros están en silencio, intenta de nuevo más tarde."
     };
   }
 };
