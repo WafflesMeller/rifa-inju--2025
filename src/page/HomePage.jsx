@@ -41,8 +41,8 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                     </h2>
 
                     <p className="mt-4 text-lg md:text-xl text-indigo-100">
-                      La moto más codiciada del año puede ser tuya. Diseño renovado, color azul eléctrico y 0KM. Solo
-                      quedan <span className="font-semibold text-white">{total - sold}</span> boletos.
+                      La moto más codiciada del año puede ser tuya. Diseño renovado, color azul eléctrico y 0KM.\n
+                      Quedan <span className="font-semibold text-white">pocos</span> números.
                     </p>
 
                     {/* ---------------------------
@@ -67,7 +67,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                         onClick={() => setActiveTab('comprar')}
                         className="inline-flex items-center justify-center px-6 md:px-8 py-3 rounded-full text-base font-bold text-indigo-900 bg-white shadow-lg transform transition duration-200 hover:scale-105"
                       >
-                        Comprar Boleto • {TICKET_PRICE} REF
+                        Comprar Números
                       </button>
 
                       <button
@@ -75,7 +75,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                         className="inline-flex items-center justify-center px-5 py-3 rounded-full border border-indigo-300/30 bg-indigo-900/40 text-base font-medium text-purple-100 backdrop-blur-sm transform transition duration-200 hover:scale-105"
                       >
                         <Sparkles className="w-5 h-5 mr-2 text-yellow-400" />
-                        Números Mágicos IA
+                        Consultar al  Oráculo
                       </button>
                     </div>
                   </div>
@@ -99,7 +99,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
               {/* COUNTERS: parte inferior (igual que antes) */}
               <div className="w-full mt-6">
                 <div className="mx-auto max-w-8xl px-0">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4"> 
                     <div className="px-2">
                       <StatCounter
                         title="Boletos Vendidos"
@@ -117,11 +117,21 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
 
                     <div className="px-2">
                       <StatCounter
-                        title="Detalles del Sorteo"
+                       title="La mejor loteria"
+                        value="Triple Chance"
+                        icon={CalendarDays}
+                        color="bg-yellow-500"
+                        hint="Compra 1 número y gana 3 premios"
+                      />
+                    </div>
+
+                    <div className="px-2">
+                      <StatCounter
+                        title="A las 7:00 p.m."
                         value="30 Diciembre"
                         icon={CalendarDays}
                         color="bg-yellow-500"
-                        hint="Triple Chance • 7:00 p.m. • No te lo pierdas!"
+                        hint="¡No te lo pierdas! • Juega y gana"
                       />
                     </div>
 
@@ -147,7 +157,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
         <div className="w-full max-w-7xl flex flex-col items-center text-center">
           <div className="mb-8">
             <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900">Premios Increíbles</h3>
-            <p className="mt-2 text-gray-500 text-lg">Tres oportunidades de ganar con tu mismo boleto</p>
+            <p className="mt-2 text-gray-500 text-lg">Tres oportunidades de ganar con el mismo número</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0 w-full">
