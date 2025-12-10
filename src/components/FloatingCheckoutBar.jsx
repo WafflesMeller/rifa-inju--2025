@@ -55,7 +55,7 @@ const FloatingCheckoutBar = ({
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl md:text-3xl font-bold text-gray-900">
-                  ${totalAmount}
+                  {totalAmount} REF
                 </span>
                 <span className="text-sm text-gray-500 font-medium">
                   x {selectedTickets.length} boletos

@@ -27,7 +27,7 @@ const BuyTicketsPage = ({ tickets = [], selectedTickets = [], onToggle = () => {
                   Selecciona tus números
                 </h1>
                 <p className="mt-2 text-sm text-indigo-100">
-                  Elige tus números de la suerte.
+                  Elige tus números de la suerte. <br /> Por tan solo <b>3 REF</b> participas por todos los premios.
                 </p>
               </div>
             </div>

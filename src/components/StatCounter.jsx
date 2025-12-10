@@ -11,10 +11,14 @@ import React from "react";
  *  - progress: number (0..1) optional -> draws small progress bar under value
  *  - hint: string optional smaller text under the value (e.g. "Faltan 200")
  */
-const StatCounter = ({ title, value, icon: Icon, color = "bg-indigo-500", progress = null, hint = "" }) => {
+const StatCounter = ({ title, value, icon: Icon, color = "bg-indigo-500", progress = null, hint = "", onClick = null }) => {
   return (
     <div
-      className="flex items-center gap-4 px-5 py-4 rounded-full bg-white/6 backdrop-blur-sm shadow-sm "
+      onClick={onClick}
+      className={`
+        flex items-center gap-4 px-5 py-4 rounded-full bg-white/6 backdrop-blur-sm shadow-sm 
+        ${onClick ? 'cursor-pointer hover:bg-white/10 transition duration-150' : ''}
+      `}
       role="group"
       aria-label={title}
     >

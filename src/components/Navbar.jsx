@@ -31,7 +31,7 @@ const Navbar = ({
     { key: "inicio", label: "Inicio" },
     { key: "comprar", label: "Comprar Tickets" },
     { key: "mis-tickets", label: "Mis Tickets" }, // <--- NUEVO
-    { key: "oracle", label: "IA Mística" },
+    { key: "oracle", label: "Oráculo" },
   ];
 
   const updateIndicator = () => {
@@ -111,7 +111,7 @@ const Navbar = ({
                         }`}
                       >
                         <Sparkles className="w-4 h-4 text-purple-500" />
-                        <span>IA Mística</span>
+                        <span>Oráculo Mágico</span>
                       </button>
                     )
                   )}

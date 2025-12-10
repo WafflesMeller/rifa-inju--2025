@@ -1,7 +1,7 @@
 // src/page/HomePage.jsx
 import React from 'react';
 // imports en el archivo del Hero (arriba)
-import { Sparkles } from 'lucide-react';
+import { Sparkles, TrophyIcon } from 'lucide-react';
 import { Ticket, CalendarDays, CircleDollarSign } from 'lucide-react';
 
 import PrizeCard from '../components/PrizeCard';
@@ -41,7 +41,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                     </h2>
 
                     <p className="mt-4 text-lg md:text-xl text-indigo-100">
-                      La moto más codiciada del año puede ser tuya. Diseño renovado, color azul eléctrico y 0KM.\n
+                      La moto más codiciada del año puede ser tuya. Diseño renovado, color azul eléctrico y 0KM. <br />
                       Quedan <span className="font-semibold text-white">pocos</span> números.
                     </p>
 
@@ -112,6 +112,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                         color="bg-indigo-500"
                         progress={total ? sold / total : 0}
                         hint={`Quedan ${Math.max(0, total - sold)} boletos`}
+                        onClick={() => setActiveTab('comprar')}
                       />
                     </div>
 
@@ -119,19 +120,21 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                       <StatCounter
                        title="La mejor loteria"
                         value="Triple Chance"
-                        icon={CalendarDays}
+                        icon={TrophyIcon}
                         color="bg-yellow-500"
                         hint="Compra 1 número y gana 3 premios"
+                        onClick={() => setActiveTab('comprar')}
                       />
                     </div>
 
                     <div className="px-2">
                       <StatCounter
-                        title="A las 7:00 p.m."
+                        title="07:00 p.m."
                         value="30 Diciembre"
                         icon={CalendarDays}
-                        color="bg-yellow-500"
+                        color="bg-red-500"
                         hint="¡No te lo pierdas! • Juega y gana"
+                        onClick={() => setActiveTab('comprar')}
                       />
                     </div>
 
@@ -142,6 +145,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                         icon={CircleDollarSign}
                         color="bg-green-500"
                         hint="A tasa Euro BCV • Pago seguro"
+                        onClick={() => setActiveTab('comprar')}
                       />
                     </div>
                   </div>
@@ -165,7 +169,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
               variant="first"
               rank="1er"
               title="Moto SBR 2025"
-              description="Azul Eléctrico, 150cc, 0KM + papeles al día"
+              description="Azul Eléctrico, 150cc de potencia, 0KM + papeles al día"
               image="/moto.webp"
               bg="bg-indigo-800"
               onClick={() => setActiveTab('comprar')}
