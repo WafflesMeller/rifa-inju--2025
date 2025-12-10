@@ -167,6 +167,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
               title="Smart TV 43'" 
               description="Marca Da+co con Google TV"
               image="/tv.webp" 
+              onClick={() => setActiveTab('comprar')}
             />
 
             <PrizeCard 
@@ -175,6 +176,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
               title="$100 Dólares" 
               description="Entrega inmediata, vía efectivo o transferencia"
               ctaText="¡Participar Ahora!"
+              onClick={() => setActiveTab('comprar')}
             />
           </div>
         </div>
