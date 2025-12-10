@@ -1,7 +1,7 @@
 // src/services/geminiOracle.js
 
 // ⚠️ PEGA AQUÍ LA URL QUE TE DIO CLOUDFLARE AL PUBLICAR EL WORKER
-const WORKER_URL = "https://tu-nombre-de-worker.tusuario.workers.dev"; 
+const WORKER_URL = "https://oraculo-rifa.resumenia.workers.dev/"; 
 
 export const callGeminiOracle = async (userContext) => {
   try {
