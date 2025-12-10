@@ -2,7 +2,7 @@
 import { Star, Medal, Trophy } from 'lucide-react';
 import React from 'react';
 
-const PrizeCard = ({ variant = 'second', rank = '2do', title, description, image }) => {
+const PrizeCard = ({ variant = 'second', rank = '2do', title, description, image, onClick }) => {
   const isFirst = variant === 'first';
   
   // Lógica de colores según el puesto (puedes ajustar 'second' y 'third' si usas otras variantes)
