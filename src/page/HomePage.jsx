@@ -121,7 +121,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                         value="30 Diciembre"
                         icon={CalendarDays}
                         color="bg-yellow-500"
-                        hint="Triple Chance AAA • 7:00 p.m. • No te lo pierdas!"
+                        hint="Triple Chance • 7:00 p.m. • No te lo pierdas!"
                       />
                     </div>
 
