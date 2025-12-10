@@ -175,6 +175,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
               rank="3er" 
               title="$100 Dólares" 
               description="Entrega inmediata, vía efectivo o transferencia"
+              image="/dinero.webp"
               ctaText="¡Participar Ahora!"
               onClick={() => setActiveTab('comprar')}
             />

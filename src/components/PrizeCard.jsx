@@ -88,7 +88,7 @@ const PrizeCard = ({ variant = 'second', rank = '2do', title, description, image
           />
         ) : (
           <div className={`text-6xl ${isThird ? 'text-amber-500 animate-spin-slow' : 'text-gray-400 animate-bounce'}`}>
-            💵
+            
           </div>
         )}
       </div>
