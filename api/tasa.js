@@ -27,13 +27,13 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       current: {
-        usd: 65.00,  // Tasa manual de emergencia
-        eur: 70.00,
+        usd: 260.00,  // Tasa manual de emergencia
+        eur: 310.00,
         date: fechaHoy
       },
       previous: { // Datos ficticios para que no rompa si usas esto
-        usd: 65.00,
-        eur: 70.00,
+        usd: 260.00,
+        eur: 310.00,
         date: fechaHoy
       },
       changePercentage: { // En 0 para que no muestre flechas locas
