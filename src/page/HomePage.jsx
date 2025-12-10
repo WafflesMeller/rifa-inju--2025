@@ -155,14 +155,30 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
               variant="first"
               rank="1er"
               title="Moto SBR 2025"
-              description="Azul Eléctrico, 0KM + papeles al día"
+              description="Azul Eléctrico, 150cc, 0KM + papeles al día"
               image="/moto.webp"
               bg="bg-indigo-800"
+              onCtaClick={comprar}
+              ctaText="¡Quiero la Moto!"
             />
 
-            <PrizeCard variant="second" rank="2do" title="Smart TV 43'" image="/tv.webp" />
+            <PrizeCard 
+              variant="second"
+              rank="2do"
+              title="Smart TV 43'" 
+              description="Marca Da+co con Google TV"
+              onCtaClick={comprar}
+              ctaText="¡Quiero la Moto!"
+              image="/tv.webp" />
 
-            <PrizeCard variant="third" rank="3er" title="$100 Dólares" image="/dinero.webp" />
+            <PrizeCard 
+              variant="third" 
+              rank="3er" 
+              title="$100 Dólares" 
+              description="Entrega inmediata, vía efectivo o transferencia"
+              image="/dinero.webp" />
+              onCtaClick={comprar}
+              ctaText="¡Quiero la Moto!"
           </div>
         </div>
       </section>
