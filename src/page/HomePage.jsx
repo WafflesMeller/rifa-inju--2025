@@ -53,7 +53,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                       <div className="relative w-56 h-56 sm:w-72 sm:h-72 flex items-center justify-center">
                         <div className="absolute inset-0 rounded-full bg-linear-to-br from-indigo-900/15 to-blue-900/05 opacity-60 pointer-events-none" />
                         <img
-                          src="/moto.png"
+                          src="/moto.webp"
                           alt="Moto Bera SBR Azul"
                           className="w-full h-full object-contain drop-shadow-2xl transform transition-transform duration-300 hover:scale-105"
                           style={{ maxWidth: 320, maxHeight: 320 }}
@@ -87,7 +87,7 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
                     <div className="absolute inset-0 rounded-full bg-linear-to-br from-indigo-900/20 to-blue-900/10 opacity-60 pointer-events-none" />
 
                     <img
-                      src="/moto.png"
+                      src="/moto.webp"
                       alt="Moto Bera SBR Azul"
                       className="relative w-full h-full object-contain drop-shadow-2xl transform transition-transform duration-300 hover:scale-105"
                       style={{ maxWidth: 420, maxHeight: 420 }}
@@ -143,30 +143,29 @@ const HomePage = ({ TICKET_PRICE, setActiveTab, totalSold, totalTickets }) => {
         </div>
       </section>
 
-<section className="w-full flex justify-center mt-10 mb-10 py-3 sm:px-6 lg:px-8">
-  <div className="w-full max-w-7xl flex flex-col items-center text-center">
-    <div className="mb-8">
-      <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900">Premios Increíbles</h3>
-      <p className="mt-2 text-gray-500 text-lg">Tres oportunidades de ganar con tu mismo boleto</p>
-    </div>
+      <section className="w-full flex justify-center mt-10 mb-10 py-3 sm:px-6 lg:px-8">
+        <div className="w-full max-w-7xl flex flex-col items-center text-center">
+          <div className="mb-8">
+            <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900">Premios Increíbles</h3>
+            <p className="mt-2 text-gray-500 text-lg">Tres oportunidades de ganar con tu mismo boleto</p>
+          </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0 w-full">
-      <PrizeCard
-        variant="first"
-        rank="1er"
-        title="Moto SBR 2025"
-        description="Azul Eléctrico, 0KM + papeles al día"
-        image="/moto.png"
-        bg="bg-indigo-800"
-      />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0 w-full">
+            <PrizeCard
+              variant="first"
+              rank="1er"
+              title="Moto SBR 2025"
+              description="Azul Eléctrico, 0KM + papeles al día"
+              image="/moto.webp"
+              bg="bg-indigo-800"
+            />
 
-      <PrizeCard variant="second" rank="2do" title="Smart TV 43'" image="/tv.png" />
+            <PrizeCard variant="second" rank="2do" title="Smart TV 43'" image="/tv.webp" />
 
-      <PrizeCard variant="third" rank="3er" title="$100 Dólares" image="/dinero.png" />
-    </div>
-  </div>
-</section>
-
+            <PrizeCard variant="third" rank="3er" title="$100 Dólares" image="/dinero.webp" />
+          </div>
+        </div>
+      </section>
     </>
   );
 };
