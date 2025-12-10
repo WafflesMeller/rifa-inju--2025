@@ -41,7 +41,7 @@ const PrizeCard = ({ variant = 'second', rank = '2do', title, description, image
     >
       {/* Efecto de brillo sutil en hover para 2do y 3ro */}
       {!isFirst && (
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-indigo-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div onClick={onClick}  className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-indigo-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none " />
       )}
 
       {/* Header */}
