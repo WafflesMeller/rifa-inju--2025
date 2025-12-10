@@ -63,7 +63,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         if (mounted) setTasaBCV(precioOficial);
       } catch (err) {
         console.error(err);
-        if (mounted) setTasaBCV(300.51);
+        if (mounted) setTasaBCV(1.00);
       } finally {
         if (mounted) setLoadingTasa(false);
       }
