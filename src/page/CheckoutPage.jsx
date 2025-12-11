@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import ModalRecibo from '../components/ModalRecibo';
 // 1️⃣ CÁMARA: Importamos la librería
 import { toBlob } from 'html-to-image';
+import { FaWhatsapp } from 'react-icons/fa';
 
 // 2️⃣ ICONOS: Agregué CheckCircle, Calendar y Sparkles que faltaban y causaban el error
 import {
@@ -19,6 +20,7 @@ import {
   CheckCircle,
   Calendar,
   Sparkles,
+  AlertCircle,
 } from 'lucide-react';
 
 import { TextInput, CedulaInput, PhoneInput } from '../components/FormInputs';
@@ -63,7 +65,7 @@ export default function CheckoutPage({ selectedTickets = [], totalAmount = 0, on
         if (mounted) setTasaBCV(precioOficial);
       } catch (err) {
         console.error(err);
-        if (mounted) setTasaBCV(310.00);
+        if (mounted) setTasaBCV(310.0);
       } finally {
         if (mounted) setLoadingTasa(false);
       }
@@ -291,8 +293,9 @@ _Estos números ya son suyos y nadie más podrá adquirirlos._
 
 Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo. 
 
-*_Si tiene alguna duda, este es nuestro canal oficial de atención._*`);
-        
+*_Si tiene alguna duda, este es nuestro canal oficial de atención._*`
+        );
+
         data.append('media', imageBlob, `ticket-${ventaData.id}.png`);
 
         await fetch(BOT_API_URL + '/enviar-mensaje-media', {
@@ -302,11 +305,11 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
       } else {
         // Fallback
         await fetch(BOT_API_URL + '/enviar-mensaje', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              numero: formData.telefono,
-              mensaje: `✅ *CONFIRMACIÓN DE COMPRA*
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            numero: formData.telefono,
+            mensaje: `✅ *CONFIRMACIÓN DE COMPRA*
 
 Hola, *${formData.nombre}*.
 
@@ -325,8 +328,8 @@ _Estos números ya son suyos y nadie más podrá adquirirlos._
 
 Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de los éxitos en el sorteo.
 
-*_Si tiene alguna duda, este es nuestro canal oficial de atención._*`
-            }),
+*_Si tiene alguna duda, este es nuestro canal oficial de atención._*`,
+          }),
         }).catch(console.warn);
       }
 
@@ -396,7 +399,7 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
         </div>
 
         {/* Tarjeta Banco */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-5 shadow-lg">
+        <div className="relative overflow-hidden rounded-xl bg-linear-to-br from-emerald-600 to-teal-700 text-white p-5 shadow-lg">
           <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
           <div className="flex items-center gap-2 mb-4 opacity-90">
             <Receipt className="w-5 h-5" />
@@ -444,12 +447,6 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
       {/* SECCIÓN DERECHA: Formulario */}
       <div className="w-full lg:w-7/12 p-3 lg:p-4 bg-white order-2 lg:order-2">
         <h2 className="text-xl font-bold text-gray-900 mb-3">Validación del Pago</h2>
-        {errorMsg && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md animate-in fade-in slide-in-from-top-2">
-            <p className="text-sm text-red-700 font-medium">{errorMsg}</p>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <CedulaInput label="Cédula" name="cedula" value={formData.cedula} onChange={handleChange} required />
@@ -518,7 +515,7 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
           <button
             type="submit"
             disabled={loading || loadingTasa}
-            className={`w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`w-full py-3 rounded-xl text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
               loading || loadingTasa
                 ? 'bg-gray-400 cursor-not-allowed transform-none shadow-none'
                 : 'bg-indigo-600 hover:bg-indigo-700 hover:scale-102'
@@ -526,23 +523,51 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
           >
             {loading ? (
               <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Verificando...</span>
+                <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               </>
             ) : (
               <>
-                <span>Confirmar Pago</span>
+                <span>Reportar Pago</span>
                 <Check className="w-5 h-5" />
               </>
             )}
           </button>
         </form>
+
+        {errorMsg && (
+          <div className="my-5 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-2">
+              {/* Icono: Ajusté el tamaño y el color para combinar con el borde */}
+              <AlertCircle className="h-7 w-7 text-red-600 shrink-0" />
+
+              <p className="text-sm text-red-700 font-medium">{errorMsg}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="my-5 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-xl animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            {/* Icono de WhatsApp de React Icons */}
+            <FaWhatsapp className="h-7 w-7 text-green-600 shrink-0" />
+
+            <div className="text-sm text-green-800">
+              <span>
+                <a href="https://wa.me/584166473681" target="_blank" rel="noopener noreferrer" className="font-medium">
+                  ¿No puedes reportar el pago? {' '}
+                  <span className="font-bold underline hover:text-green-900 transition-colors">
+                    Escríbenos al WhatsApp aquí
+                  </span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ==================================================================================
           👻 TICKET FANTASMA (Solo se ve cuando se va a tomar la foto)
       ================================================================================== */}
-{/* Contenedor oculto para generación de imagen/PDF */}
+      {/* Contenedor oculto para generación de imagen/PDF */}
       <div
         style={{
           position: 'absolute',
@@ -555,16 +580,15 @@ Agradecemos su confianza en 🎰 *La Gran Rifa 2025*. Le deseamos el mayor de lo
           <div ref={receiptRef} className="p-4 bg-transparent">
             {/* Reutilizamos tu componente TicketCard */}
             <TicketCard
-            active={true}
+              active={true}
               compra={{
                 // ADAPTADOR: Mapeamos los datos de receiptData al formato que espera el componente
                 id: receiptData.id,
-                nombre_cliente: receiptData.nombre, 
+                nombre_cliente: receiptData.nombre,
                 tickets_seleccionados: receiptData.tickets,
                 created_at: receiptData.fecha,
-                estado: 'pagado' // Forzamos el estado visual
-
-              }} 
+                estado: 'pagado', // Forzamos el estado visual
+              }}
             />
           </div>
         )}

@@ -16,7 +16,7 @@ const StatCounter = ({ title, value, icon: Icon, color = "bg-indigo-500", progre
     <div
       onClick={onClick}
       className={`
-        flex items-center gap-4 px-5 py-4 rounded-full bg-white/6 backdrop-blur-sm shadow-sm 
+        flex items-center gap-4 px-5 py-4 mb-2 rounded-full bg-white/6 backdrop-blur-sm shadow-sm 
         ${onClick ? 'cursor-pointer hover:bg-white/10 transition duration-150' : ''}
       `}
       role="group"

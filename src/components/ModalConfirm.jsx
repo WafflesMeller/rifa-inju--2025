@@ -18,7 +18,6 @@ export default function ModalConfirm({
          🟢 CORRECCIÓN: z-[100] (Uso de corchetes para valor personalizado) 
       */}
       <Dialog as="div" className="relative z-100" onClose={onClose}>
-        
         {/* Backdrop (Fondo oscuro) */}
         <TransitionChild
           as={Fragment}
@@ -38,7 +37,6 @@ export default function ModalConfirm({
         */}
         <div className="fixed inset-0 z-100 w-screen overflow-y-auto">
           <div className="flex min-h-full items-end justify-center p-0 text-center sm:items-center sm:p-4">
-            
             <TransitionChild
               as={Fragment}
               enter="ease-out duration-300"
@@ -72,7 +70,7 @@ export default function ModalConfirm({
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <DialogTitle as="h3" className="text-lg font-bold text-white">
-                        Confirmar Pago
+                        Reportar Pago
                       </DialogTitle>
                       <p className="text-xs text-white/70">Completa los datos para validar</p>
                     </div>
@@ -96,11 +94,13 @@ export default function ModalConfirm({
                       onSuccess={(result) => {
                         try {
                           if (typeof onClear === 'function') onClear();
-                        } catch (e) { console.error(e) }
-                        
+                        } catch (e) {
+                          console.error(e);
+                        }
+
                         // 1. Cerramos el modal
                         onClose();
-                        
+
                         // 2. Avisamos al padre (con timeout para que la animación se vea bien)
                         setTimeout(() => {
                           onPaymentSuccess(result);

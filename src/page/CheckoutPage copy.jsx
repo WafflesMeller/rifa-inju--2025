@@ -328,7 +328,7 @@ export default function CheckoutPage({ selectedTickets, totalAmount, onBack, onS
           disabled={loading || loadingTasa}
           className="w-full bg-indigo-600 text-white font-bold py-4 rounded-md hover:bg-indigo-700 transition disabled:bg-gray-400 text-lg shadow-lg"
         >
-                    {loading ? 'Verificando Pago...' : 'CONFIRMAR PAGO'}       {' '}
+                    {loading ? 'Verificando Pago...' : 'Reportar Pago'}       {' '}
         </button>
              {' '}
       </form>
