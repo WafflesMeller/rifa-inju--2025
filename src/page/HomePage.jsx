@@ -9,31 +9,34 @@ import StatCounter from '../components/StatCounter';
 import { FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 
-// Caja de tiempo mejorada con efecto "Glass" y brillo
 const TimeBox = ({ value, label }) => (
-  <div
-    className="relative group flex flex-col items-center justify-center 
-    bg-linear-to-b from-slate-800/40 to-slate-900/40 
-    border-t border-l border-white/20 border-b border-r 
-    rounded-2xl p-3 sm:p-5 min-w-[75px] sm:min-w-[100px] 
+  <div className="relative group flex flex-col items-center justify-center 
+    /* AJUSTES MÓVIL: ancho mínimo 60px, padding pequeño (p-2) */
+    bg-gradient-to-b from-slate-800/40 to-slate-900/40 
+    border-t border-l border-white/20 border-b border-r border-white/5 
+    rounded-xl p-2 sm:p-5 min-w-[60px] sm:min-w-[100px] 
     backdrop-blur-xl shadow-2xl shadow-indigo-500/10 
     transform transition-all duration-300 hover:-translate-y-1 hover:shadow-indigo-500/20"
   >
-    {/* Decoración de brillo en la esquina */}
-    <div className="absolute top-0 right-0 -mr-1 -mt-1 w-8 h-8 rounded-full bg-linear-to-br from-white/20 to-transparent blur-md opacity-50" />
+    {/* Decoración brillo */}
+    <div className="absolute top-0 right-0 -mr-1 -mt-1 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-white/20 to-transparent blur-md opacity-50" />
 
-    <span className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-linear-to-b from-white via-indigo-50 to-indigo-200 tabular-nums font-mono tracking-tight drop-shadow-[0_2px_10px_rgba(255,255,255,0.3)]">
+    {/* AJUSTES MÓVIL: Texto más pequeño (text-xl o 2xl) */}
+    <span className="text-2xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-indigo-50 to-indigo-200 tabular-nums font-mono tracking-tight drop-shadow-[0_2px_10px_rgba(255,255,255,0.3)]">
       {String(value).padStart(2, '0')}
     </span>
-    <span className="text-[10px] sm:text-xs font-bold text-indigo-300 uppercase tracking-[0.2em] mt-2">{label}</span>
+    
+    <span className="text-[9px] sm:text-xs font-bold text-indigo-300 uppercase tracking-widest mt-1 sm:mt-2">
+      {label}
+    </span>
   </div>
 );
 
-// Separador con puntos pulsantes
 const Separator = () => (
-  <div className="flex flex-col gap-3 h-full justify-center pb-1 opacity-80">
-    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] animate-pulse" />
-    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] animate-pulse delay-75" />
+  /* AJUSTES MÓVIL: Menos padding bottom (pb-4) y gap más pequeño */
+  <div className="flex flex-col gap-1.5 sm:gap-3 h-full justify-center pb-4 sm:pb-8 opacity-80">
+    <div className="w-1 h-1 sm:w-2 sm:h-2 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] animate-pulse" />
+    <div className="w-1 h-1 sm:w-2 sm:h-2 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] animate-pulse delay-75" />
   </div>
 );
 
